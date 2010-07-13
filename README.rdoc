@@ -2,7 +2,7 @@
 
 Obey robots.txt on top of em-http-request (http://github.com/igrigorik/em-http-request - Asynchronous HTTP Client)
 
- R. Daneel Olivaw is a fictional robot created by Isaac Asimov - http://en.wikipedia.org/wiki/R._Daneel_Olivaw
+R Daneel Olivaw is a fictional robot created by Isaac Asimov - http://en.wikipedia.org/wiki/R._Daneel_Olivaw
 
 == Important
 
