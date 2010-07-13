@@ -1,5 +1,10 @@
 require 'em-http'
 require 'robot_rules'
+require 'net/http'
+
+module Net
+  class DisobeyingRobotsTxt < HTTPBadResponse ; end
+end
 
 class RDaneel
 
@@ -33,19 +38,31 @@ class RDaneel
       end
     end
     if robots_cache && robots_file = robots_cache.get(robots_txt_url)
-      raise Net::DisobeyingRobotsTxt unless robots_allowed?(robots_file, useragent)
-      http = EventMachine::HttpRequest.new(@uri).get(options)
-      http.callback {blk.call(http)}
-      http.errback {blk.call(http)}
+      if robots_allowed?(robots_file, useragent)
+        http = EventMachine::HttpRequest.new(@uri).get(options)
+        http.callback {blk.call(http)}
+        http.errback {blk.call(http)}
+      else
+        conn = EventMachine::HttpClient.new("")
+        conn.uri = @uri
+        conn.on_error("robots.txt")
+        blk.call(conn)
+      end
     else
       robots = EventMachine::HttpRequest.new(robots_txt_url).get
       robots.callback {
         robots_file = robots.response
         robots_cache.put(robots_txt_url, robots_file) if robots_cache
-        raise Net::DisobeyingRobotsTxt unless robots_allowed?(robots_file, useragent)
-        http = EventMachine::HttpRequest.new(@uri).get(options)
-        http.callback {blk.call(http)}
-        http.errback {blk.call(http)}
+        if robots_allowed?(robots_file, useragent)
+          http = EventMachine::HttpRequest.new(@uri).get(options)
+          http.callback {blk.call(http)}
+          http.errback {blk.call(http)}
+        else
+          conn = EventMachine::HttpClient.new("")
+          conn.uri = @uri
+          conn.on_error("robots.txt")
+          blk.call(conn)
+        end
       }
       robots.errback {
         http = EventMachine::HttpRequest.new(@uri).get(options)
