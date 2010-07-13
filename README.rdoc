@@ -1,9 +1,13 @@
-= rdaneel
+= R.Daneel
 
-Description goes here.
+Obey robots.txt on top of em-http-request (Asynchronous HTTP Client - http://github.com/igrigorik/em-http-request)
+
+
+R. Daneel Olivaw is a fictional robot created by Isaac Asimov (http://en.wikipedia.org/wiki/R._Daneel_Olivaw)
+
 
 == Note on Patches/Pull Requests
- 
+
 * Fork the project.
 * Make your feature addition or bug fix.
 * Add tests for it. This is important so I don't break it in a
@@ -15,3 +19,4 @@ Description goes here.
 == Copyright
 
 Copyright (c) 2010 Edgar. See LICENSE for details.
+

@@ -5,11 +5,13 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "rdaneel"
-    gem.summary = %Q{Obey robots.txt feature based on em-http-request (Asynchronous HTTP Client)}
+    gem.summary = %Q{Obey robots.txt on top of em-http-request (Asynchronous HTTP Client)}
     gem.description = %Q{TODO: longer description of your gem}
     gem.email = "edgargonzalez@gmail.com"
-    gem.homepage = "http://github.com/edgar/rdaneel"
-    gem.authors = ["Edgar"]
+    gem.homepage = "http://github.com/hasmanydevelopers/RDaneel"
+    gem.authors = ["Edgar Gonzalez"]
+    gem.add_dependency("em-http-request", ">= 0.2.10")
+    gem.add_dependency('robot_rules', '>= 0.9.1')
     gem.add_development_dependency "rspec", ">= 1.2.9"
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
@@ -43,3 +45,4 @@ Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_files.include('README*')
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
+
