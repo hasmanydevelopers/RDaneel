@@ -23,7 +23,7 @@ class RDaneel
 
   #
   # The same em-http-request options apply here.
-  # But when following redirects the method don't check the intermediate robots.txt just the first one.
+  # But when following redirects the method won't check the intermediate robots.txt, just the first one.
   #
   def get(options = {}, &blk)
     useragent = "RDaneel"

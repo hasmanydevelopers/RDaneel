@@ -1,9 +1,13 @@
 = R.Daneel
 
-Obey robots.txt on top of em-http-request (Asynchronous HTTP Client - http://github.com/igrigorik/em-http-request)
+Obey robots.txt on top of em-http-request (http://github.com/igrigorik/em-http-request - Asynchronous HTTP Client)
 
+ R. Daneel Olivaw is a fictional robot created by Isaac Asimov - http://en.wikipedia.org/wiki/R._Daneel_Olivaw
 
-R. Daneel Olivaw is a fictional robot created by Isaac Asimov (http://en.wikipedia.org/wiki/R._Daneel_Olivaw)
+== Important
+
+The same em-http-request options apply here.
+But when following redirects the method won't check the intermediate robots.txt, just the first one.
 
 
 == Note on Patches/Pull Requests
