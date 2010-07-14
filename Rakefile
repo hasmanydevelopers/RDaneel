@@ -6,7 +6,7 @@ begin
   Jeweler::Tasks.new do |gem|
     gem.name = "rdaneel"
     gem.summary = %Q{Obey robots.txt on top of em-http-request (Asynchronous HTTP Client)}
-    gem.description = %Q{TODO: longer description of your gem}
+    gem.description = %Q{Add robots.txt support on top of em-http-request}
     gem.email = "edgargonzalez@gmail.com"
     gem.homepage = "http://github.com/hasmanydevelopers/RDaneel"
     gem.authors = ["Edgar Gonzalez"]
