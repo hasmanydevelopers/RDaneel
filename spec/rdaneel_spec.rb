@@ -90,7 +90,3 @@ def stop_server
   @server_thread.join
 end
 
-def robots_txt
-
-end
-
