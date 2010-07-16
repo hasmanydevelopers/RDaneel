@@ -1,12 +1,6 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 require 'webrick'
 
-module EventMachine
-  class HttpClient < Connection
-    attr_accessor :redirects_count
-  end
-end
-
 describe "RDaneel" do
 
   describe "when there is no robots.txt in the host of the uri" do
@@ -43,7 +37,7 @@ describe "RDaneel" do
           puts r.error
           EM.stop
         }
-        r.get(:max_redirects => 3)
+        r.get(:redirects => 3)
       }
     end
   end

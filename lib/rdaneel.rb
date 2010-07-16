@@ -23,7 +23,11 @@ class RDaneel
   end
 
   def get(options = {})
-    useragent = "RDaneel"
+    default_opts = {:head => {'user-agent' => 'RDaneel'}}
+    opts = default_opts.merge(options)
+    max_redirects = opts.delete(:redirects).to_i
+    useragent = opts[:head]['user-agent']
+
     _get = lambda {}
 
     _handle_uri_callback = lambda {|h|
@@ -35,6 +39,10 @@ class RDaneel
           self.uri = redirect_url(h)
           self.redirects << self.uri.to_s
           _get.call
+        rescue
+          self.http_client = h
+          @error = "mal formed redirected url"
+          fail(self)
         end
       else
         # other error
