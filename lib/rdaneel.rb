@@ -33,6 +33,7 @@ class RDaneel
       elsif redirected?(h)
         begin
           self.uri = redirect_url(h)
+          self.redirects << self.uri.to_s
           _get.call
         end
       else

@@ -29,12 +29,13 @@ describe "RDaneel" do
       stop_server
     end
 
-    it "should work" do
+    it "should follow all the redirects" do
       EM.run {
         r = RDaneel.new("http://127.0.0.1:8080/1st_redirect")
         r.callback {
           puts "callback"
           puts r.http_client.response
+          puts r.redirects.inspect
           EM.stop
         }
         r.errback {
