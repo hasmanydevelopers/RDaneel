@@ -4,6 +4,8 @@ require 'robot_rules'
 class RDaneel
   include EM::Deferrable
 
+  DEFAULT_OPTIONS = {:head => {'user-agent' => 'RDaneel'}}
+
   class << self
     def robots_cache=(klass, options={})
       @robots_cache = klass.new(options)
@@ -23,10 +25,9 @@ class RDaneel
   end
 
   def get(options = {})
-    default_opts = {:head => {'user-agent' => 'RDaneel'}}
-    opts = default_opts.merge(options)
-    max_redirects = opts.delete(:redirects).to_i
-    useragent = opts[:head]['user-agent']
+    max_redirects = options.delete(:redirects).to_i
+    options = DEFAULT_OPTIONS.merge(options)
+    useragent = options[:head]['user-agent']
 
     _get = lambda {}
 
