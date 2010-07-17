@@ -16,8 +16,8 @@ class RDaneel
     end
   end
 
-  attr_accessor :uri, :redirects, :http_client
-  attr_reader :error
+  attr_accessor :uri
+  attr_reader :error, :redirects, :http_client
 
   def initialize(uri)
     @uri = uri.kind_of?(Addressable::URI) ? uri : Addressable::URI::parse(uri)
