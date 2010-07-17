@@ -12,7 +12,9 @@ describe "RDaneel" do
                       resp.body = "Hello World!" } )
         s.mount_proc( '/2nd_redirect', lambda { |req, resp|
                       resp.status = 301
+#                      resp['Location'] = "http://127.0.0.1:8080/1st_redirect" } )
                       resp['Location'] = "http://127.0.0.1:8080/hello_world" } )
+
         s.mount_proc('/1st_redirect', lambda { |req, resp|
                       resp.status = 301;
                       resp['Location'] = "http://127.0.0.1:8080/2nd_redirect" } )
@@ -28,6 +30,7 @@ describe "RDaneel" do
         r = RDaneel.new("http://127.0.0.1:8080/1st_redirect")
         r.callback {
           puts "callback"
+          puts r.uri
           puts r.http_client.response
           puts r.redirects.inspect
           EM.stop
@@ -38,7 +41,7 @@ describe "RDaneel" do
           EM.stop
         }
 
-        r.get(:redirects => 3)
+        r.get(:redirects =>2)
       }
     end
   end

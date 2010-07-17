@@ -20,28 +20,42 @@ class RDaneel
   attr_reader :error
 
   def initialize(uri)
-    self.uri = uri.kind_of?(Addressable::URI) ? uri : Addressable::URI::parse(uri)
-    self.redirects = []
+    @uri = uri.kind_of?(Addressable::URI) ? uri : Addressable::URI::parse(uri)
+    @redirects = []
   end
 
-  def get(options = {})
+  def get(opts = {})
+    current_uri = @uri
+    options = DEFAULT_OPTIONS.merge(opts)
     max_redirects = options.delete(:redirects).to_i
-    options = DEFAULT_OPTIONS.merge(options)
     useragent = options[:head]['user-agent']
 
     _get = lambda {}
 
     _handle_uri_callback = lambda {|h|
       if success?(h)
-        self.http_client = h
+        @uri = current_uri if current_uri != @uri
+        @http_client = h
         succeed(self)
       elsif redirected?(h)
+        if @redirects.size >= max_redirects
+          @http_client = h
+          @error = "excedded max redirects"
+          fail(self)
+          return
+        end
         begin
-          self.uri = redirect_url(h)
-          self.redirects << self.uri.to_s
+          @redirects << current_uri.to_s
+          current_uri = redirect_url(h, current_uri)
+          if @redirects.include?(current_uri.to_s)
+            @http_client = h
+            @error = "infinite redirect"
+            fail(self)
+            return
+          end
           _get.call
         rescue
-          self.http_client = h
+          @http_client = h
           @error = "mal formed redirected url"
           fail(self)
         end
@@ -53,45 +67,45 @@ class RDaneel
       end
     }
     _get = lambda {
-      if robots_cache && robots_file = robots_cache.get(robots_txt_url)
-        if robots_allowed?(robots_file, useragent)
-          h = EM::HttpRequest.new(self.uri).get(options)
+      if robots_cache && robots_file = robots_cache.get(robots_txt_url(current_uri))
+        if robots_allowed?(robots_file, useragent, current_uri)
+          h = EM::HttpRequest.new(current_uri).get(options)
           h.callback(&_handle_uri_callback)
           h.errback {
-            self.http_client = h
+            @http_client = h
             @error = h.error
             fail(self)
           }
         else
-          self.http_client = EM::HttpClient.new("")
+          @http_client = EM::HttpClient.new("")
           @error = "robots denied"
           fail(self)
         end
       else
-        robots = EM::HttpRequest.new(robots_txt_url).get
+        robots = EM::HttpRequest.new(robots_txt_url(current_uri)).get
         robots.callback {
           robots_file = robots.response
-          robots_cache.put(robots_txt_url, robots_file) if robots_cache
-          if robots_allowed?(robots_file, useragent)
-            h = EM::HttpRequest.new(@uri).get(options)
+          robots_cache.put(robots_txt_url(current_uri), robots_file) if robots_cache
+          if robots_allowed?(robots_file, useragent, current_uri)
+            h = EM::HttpRequest.new(current_uri).get(options)
             h.callback(&_handle_uri_callback)
             h.errback {
-              self.http_client = h
+              @http_client = h
               @error = h.error
               fail(self)
             }
           else
-            self.http_client = EM::HttpClient.new("")
+            @http_client = EM::HttpClient.new("")
             @error = "robots denied"
             fail(self)
           end
         }
         robots.errback {
-          robots_cache.put(robots_txt_url, "") if robots_cache
-          h = EM::HttpRequest.new(@uri).get(options)
+          robots_cache.put(robots_txt_url(current_uri), "") if robots_cache
+          h = EM::HttpRequest.new(current_uri).get(options)
           h.callback(&_handle_uri_callback)
           h.errback {
-            self.http_client = h
+            @http_client = h
             @error = h.error
             fail(self)
           }
@@ -107,17 +121,17 @@ class RDaneel
 
   protected
 
-  def robots_allowed?(robots_file, useragent)
+  def robots_allowed?(robots_file, useragent, u)
     rules = RobotRules.new(useragent)
-    rules.parse(@uri.to_s, robots_file)
-    rules.allowed? @uri.to_s
+    rules.parse(u.to_s, robots_file)
+    rules.allowed? u.to_s
   end
 
-  def robots_txt_url
-    location = if self.uri.port == 80
-      self.uri.host
+  def robots_txt_url(u)
+    location = if u.port == 80
+      u.host
     else
-      "#{self.uri.host}:#{self.uri.port}"
+      "#{u.host}:#{u.port}"
     end
     "http://#{location}/robots.txt"
   end
@@ -130,9 +144,9 @@ class RDaneel
     http_client.response_header.status == 301 || http_client.response_header.status == 302
   end
 
-  def redirect_url(http_client)
+  def redirect_url(http_client, u)
     location = Addressable::URI.parse(http_client.response_header.location)
-    return self.uri.join(location) if location.relative?
+    return u.join(location) if location.relative?
     return location
   end
 end
