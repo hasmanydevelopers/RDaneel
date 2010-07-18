@@ -29,10 +29,6 @@ class Burrito
                                      } )
   end
 
-  def unmount( path )
-    @server.unmount( path )
-  end
-
   def stop
     @server.shutdown
     @server_thread.join
