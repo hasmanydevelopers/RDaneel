@@ -4,20 +4,23 @@ describe "RDaneel" do
 
   describe "when there are no redirects" do
 
+    before(:all) do
+      @burrito = Burrito.new
+    end
+
+    after(:all) do
+      @burrito.stop
+    end
+
     describe "when there is no robots.txt file" do
 
       before(:all) do
-        @burrito = Burrito.new
+        @burrito.mount( '/hello_world', 200, 'Hello World!' )
       end
 
-      after(:all) do
-        @burrito.stop
-      end
-
-      it "should get the content withoud following any" do
+      it "should get the content withoud following any redirect" do
 
         EM.run do
-          @burrito.mount( '/hello_world', 200, 'Hello World!' )
           r = RDaneel.new("http://127.0.0.1:8080/hello_world")
           r.callback do
             r.http_client.response_header.status.should == 200
