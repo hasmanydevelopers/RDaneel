@@ -10,22 +10,27 @@ Spec::Runner.configure do |config|
 
 end
 
-def mount( path, status, body = nil )
-  @server.mount_proc( path, lambda { |req, resp|
-                                     resp.status = status
-                                     resp.body = body } )
-end
+class Burrito
 
-def start_server( options={:Port => 8080,}, &blk )
-  @server = WEBrick::HTTPServer.new( options )
-  @server_thread = Thread.new {
-    blk.call(@server) if blk
-    @server.start
-  }
-end
+  def initialize( options={:Port => 8080,}, &blk )
+    @server = WEBrick::HTTPServer.new( options )
+    @server_thread = Thread.new {
+      blk.call(@server) if blk
+      @server.start
+    }
+    @server
+  end
 
-def stop_server
-  @server.shutdown
-  @server_thread.join
+  def mount( path, status, body = nil )
+    @server.mount_proc( path, lambda { |req, resp|
+                                       resp.status = status
+                                       resp.body = body } )
+  end
+
+  def stop
+    @server.shutdown
+    @server_thread.join
+  end
+
 end
 

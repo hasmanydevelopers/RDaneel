@@ -7,17 +7,17 @@ describe "RDaneel" do
     describe "when there is no robots.txt file" do
 
       before(:all) do
-        start_server
+        @burrito = Burrito.new
       end
 
       after(:all) do
-        stop_server
+        @burrito.stop
       end
 
-      it "should get the content" do
+      it "should get the content withoud following any" do
 
         EM.run do
-          mount( '/hello_world', 200, 'Hello World!' )
+          @burrito.mount( '/hello_world', 200, 'Hello World!' )
           r = RDaneel.new("http://127.0.0.1:8080/hello_world")
           r.callback do
             r.http_client.response_header.status.should == 200
