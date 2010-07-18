@@ -27,7 +27,7 @@ describe "RDaneel" do
 
     it "should follow all the redirects" do
       EM.run {
-        r = RDaneel.new("http://127.0.0.1:8080/1st_redirect")
+        r = RDaneel.new("http://127.0.0.1:8080/hello_world")
         r.callback {
           puts "callback"
           puts r.uri
