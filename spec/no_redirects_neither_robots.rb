@@ -10,6 +10,18 @@ describe "RDaneel when there are no redirects" do
     @burrito.stop
   end
 
+  describe "when a successfull status different than 200 is issued for robots.txt" do
+
+    it "should get the content ignoring the redirect"
+
+  end
+
+  describe "when a redirect other than 301 and 302 is issued for robots.txt" do
+
+    it "should get the content ignoring the redirect"
+
+  end
+
   (301..302).each do |status|
 
     describe "when robots.txt has been moved (#{status})" do
