@@ -7,9 +7,7 @@ describe "RDaneel" do
     describe "when there is no robots.txt file" do
 
       before(:all) do
-        start_server do |s|
-          mount( '/hello_world', 200, 'Hello World!' )
-        end
+        start_server
       end
 
       after(:all) do
@@ -19,6 +17,7 @@ describe "RDaneel" do
       it "should get the content" do
 
         EM.run do
+          mount( '/hello_world', 200, 'Hello World!' )
           r = RDaneel.new("http://127.0.0.1:8080/hello_world")
           r.callback do
             r.http_client.response_header.status.should == 200
