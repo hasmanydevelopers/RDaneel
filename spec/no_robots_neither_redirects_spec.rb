@@ -29,8 +29,7 @@ describe "RDaneel" do
             EM.stop
           end
           r.errback do
-            puts "errback"
-            puts r.error
+            fail
             EM.stop
           end
           r.get
