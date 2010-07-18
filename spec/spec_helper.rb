@@ -21,12 +21,16 @@ class Burrito
     @server
   end
 
-  def mount( path, status, body = nil, blk = nil )
-    @server.mount_proc( path, lambda { |req, resp|
-                                       resp.status = status
-                                       resp.body = body
-                                       blk.call if blk
-                                     } )
+  def mount( opts )
+    raise ":path is required" if opts[:path].nil?
+    raise ":status is required" if opts[:status].nil?
+    @server.mount_proc( opts[:path],
+      lambda { |req, resp|
+               resp.status = opts[:status]
+               resp.body = opts[:body] unless opts[:body].nil?
+               resp['Location'] = opts[:location] unless opts[:location].nil?
+               opts[:block].call unless opts[:block].nil?
+             } )
   end
 
   def stop
@@ -34,6 +38,18 @@ class Burrito
     @server_thread.join
   end
 
+end
+
+def should_not_be_hit
+  should_be_hit( 0 )
+end
+
+def should_be_hit_once
+  should_be_hit( 1 )
+end
+
+def should_be_hit_twice
+  should_be_hit( 2 )
 end
 
 def should_be_hit( times = 1 )
