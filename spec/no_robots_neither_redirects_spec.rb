@@ -6,6 +6,7 @@ describe "RDaneel" do
 
     before(:all) do
       @burrito = Burrito.new
+      @burrito.mount( '/hello_world', 200, 'Hello World!' )
     end
 
     after(:all) do
@@ -15,7 +16,7 @@ describe "RDaneel" do
     describe "when there is no robots.txt file" do
 
       before(:all) do
-        @burrito.mount( '/hello_world', 200, 'Hello World!' )
+        @burrito.mount( '/hello_world', 404 )
       end
 
       it "should get the content withoud following any redirect" do
