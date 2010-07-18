@@ -10,6 +10,12 @@ Spec::Runner.configure do |config|
 
 end
 
+def mount( path, status, body = nil )
+  @server.mount_proc( path, lambda { |req, resp|
+                                     resp.status = status
+                                     resp.body = body } )
+end
+
 def start_server( options={:Port => 8080,}, &blk )
   @server = WEBrick::HTTPServer.new( options )
   @server_thread = Thread.new {

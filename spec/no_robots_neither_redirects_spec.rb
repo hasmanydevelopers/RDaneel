@@ -8,9 +8,7 @@ describe "RDaneel" do
 
       before(:all) do
         start_server do |s|
-          s.mount_proc( '/hello_world', lambda { |req, resp|
-                        resp.status = 200
-                        resp.body = "Hello World!" } )
+          mount( '/hello_world', 200, 'Hello World!' )
         end
       end
 
