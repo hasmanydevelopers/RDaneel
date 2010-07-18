@@ -21,10 +21,16 @@ class Burrito
     @server
   end
 
-  def mount( path, status, body = nil )
+  def mount( path, status, body = nil, blk = nil )
     @server.mount_proc( path, lambda { |req, resp|
                                        resp.status = status
-                                       resp.body = body } )
+                                       resp.body = body
+                                       blk.call if blk
+                                     } )
+  end
+
+  def unmount( path )
+    @server.unmount( path )
   end
 
   def stop
@@ -32,5 +38,11 @@ class Burrito
     @server_thread.join
   end
 
+end
+
+def should_be_hit( times = 1 )
+  l = lambda {}
+  m = l.should_receive(:call).exactly(times).times
+  return l
 end
 
