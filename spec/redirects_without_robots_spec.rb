@@ -113,6 +113,40 @@ describe "RDaneel when there are redirects" do
 
       end
 
+      describe "when the number of redirects exceed the maximum specified" do
+
+        it "should stop following redirects once the  maximum specified is reached" do
+
+          @burrito.mount( :path  => '/robots.txt',  :status => 404,
+                          :block => should_be_hit_twice )
+          @burrito.mount( :path  => '/redirect_me', :status => 301,
+                          :location  => 'http://127.0.0.1:8080/redirect_me_again',
+                          :block  => should_be_hit_once )
+          @burrito.mount( :path  => '/redirect_me_again', :status => 301,
+                          :location  => 'http://127.0.0.1:8080/hello_world',
+                          :block  => should_be_hit_once )
+          @burrito.mount( :path  => '/hello_world', :status => 200,
+                          :body  => 'Hello World!',
+                          :block  => should_not_be_hit )
+
+          EM.run do
+            r = RDaneel.new("http://127.0.0.1:8080/redirect_me")
+            r.callback do
+              fail
+              EM.stop
+            end
+            r.errback do
+              r.redirects.should == ['http://127.0.0.1:8080/redirect_me']
+              r.error.should == "Exceeded maximum number of redirects"
+              EM.stop
+            end
+            r.get(:redirects => 1)
+          end
+
+        end
+
+      end
+
     end
 
   end
