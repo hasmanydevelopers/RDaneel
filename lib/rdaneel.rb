@@ -7,8 +7,8 @@ class RDaneel
   DEFAULT_OPTIONS = {:head => {'user-agent' => 'RDaneel'}}
 
   class << self
-    def robots_cache=(klass, options={})
-      @robots_cache = klass.new(options)
+    def robots_cache=(c)
+      @robots_cache = c
     end
 
     def robots_cache
@@ -67,7 +67,7 @@ class RDaneel
       end
     }
     _get = lambda {
-      if robots_cache && robots_file = robots_cache.get(robots_txt_url(current_uri))
+      if robots_cache && robots_file = robots_cache[robots_txt_url(current_uri)]
         if robots_allowed?(robots_file, useragent, current_uri)
           h = EM::HttpRequest.new(current_uri).get(options)
           h.callback(&_handle_uri_callback)
@@ -85,7 +85,7 @@ class RDaneel
         robots = EM::HttpRequest.new(robots_txt_url(current_uri)).get
         robots.callback {
           robots_file = robots.response
-          robots_cache.put(robots_txt_url(current_uri), robots_file) if robots_cache
+          robots_cache[robots_txt_url(current_uri)] = robots_file if robots_cache
           if robots_allowed?(robots_file, useragent, current_uri)
             h = EM::HttpRequest.new(current_uri).get(options)
             h.callback(&_handle_uri_callback)
@@ -101,7 +101,7 @@ class RDaneel
           end
         }
         robots.errback {
-          robots_cache.put(robots_txt_url(current_uri), "") if robots_cache
+          robots_cache.put[robots_txt_url(current_uri)] = "" if robots_cache
           h = EM::HttpRequest.new(current_uri).get(options)
           h.callback(&_handle_uri_callback)
           h.errback {
