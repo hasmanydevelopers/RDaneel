@@ -40,7 +40,7 @@ class RDaneel
       elsif redirected?(h)
         if @redirects.size >= max_redirects
           @http_client = h
-          @error = "excedded max redirects"
+          @error = "Exceeded maximum number of redirects"
           fail(self)
           return
         end
