@@ -1,13 +1,51 @@
 = R.Daneel
 
-Obey robots.txt on top of em-http-request (http://github.com/igrigorik/em-http-request - Asynchronous HTTP Client)
+An EventMachine+Ruby library to fetch urls following robots.txt rules.
+
+RDaneel is built it on top of @igrigorik's *em-http-request*: http://github.com/igrigorik/em-http-request
+
+== Features
+
+- Support following redirects, honoring robots.txt for each host in the redirect chain.
+- Support an external cache to store robots.txt
+- Compatible with all options defined in em-http-request
+
+== Install
+
+  $ gem install rdaneel
+
+== Examples
+
+  require 'rdaneel'
+
+  EM.run do
+    r = RDaneel.new("http://bit.ly/cbEnpa")
+    r.callback{
+      puts r.http_client.response_header.status
+      puts r.http_client.response[0,80]
+      puts r.redirects
+      puts r.uri
+      EM.stop
+    }
+    r.errback{
+      puts r.error
+      EM.stop
+    }
+    r.get(:redirects => 3)
+  end
+
+  => 200
+  => <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  => http://bit.ly:80/cbEnpa
+  => http://github.com:80/hasmanydevelopers/RDaneel
+
+== Why RDaneel?
 
 R Daneel Olivaw is a fictional robot created by Isaac Asimov - http://en.wikipedia.org/wiki/R._Daneel_Olivaw
 
-== Important
+== Acknowledge
 
-The same em-http-request options apply here.
-But when following redirects the method won't check the intermediate robots.txt, just the first one.
+To Ilya Grigorik (@igrigorik) for em-http-request lib and his support and advice.
 
 
 == Note on Patches/Pull Requests
@@ -22,5 +60,5 @@ But when following redirects the method won't check the intermediate robots.txt,
 
 == Copyright
 
-Copyright (c) 2010 Edgar. See LICENSE for details.
+Copyright (c) 2010 has_many :developers. See LICENSE for details.
 
