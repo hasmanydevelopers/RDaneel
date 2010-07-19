@@ -16,6 +16,8 @@ RDaneel is built it on top of @igrigorik's *em-http-request*: http://github.com/
 
 == Examples
 
+=== Following redirects
+
   require 'rdaneel'
 
   EM.run do
@@ -28,7 +30,7 @@ RDaneel is built it on top of @igrigorik's *em-http-request*: http://github.com/
       EM.stop
     }
     r.errback{
-      puts r.error
+      puts "should not happen"
       EM.stop
     }
     r.get(:redirects => 3)
@@ -38,6 +40,27 @@ RDaneel is built it on top of @igrigorik's *em-http-request*: http://github.com/
   => <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   => http://bit.ly:80/cbEnpa
   => http://github.com:80/hasmanydevelopers/RDaneel
+
+
+=== Denied by robots.txt
+
+  require 'rdaneel'
+
+  EM.run do
+    r = RDaneel.new("http://github.com/hasmanydevelopers/RDaneel/tarball/v0.0.0")
+    r.callback{
+      puts "should not happen"
+      EM.stop
+    }
+    r.errback{
+      puts r.error
+      EM.stop
+    }
+    r.get(:redirects => 3)
+  end
+
+  => robots denied
+
 
 == Why RDaneel?
 
