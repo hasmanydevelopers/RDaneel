@@ -2,14 +2,6 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe "RDaneel when there are no redirects" do
 
-  before(:all) do
-    @burrito = Burrito.new
-  end
-
-  after(:all) do
-    @burrito.stop
-  end
-
   describe "when a successfull status different than 200 is issued for robots.txt" do
 
     it "should get the content ignoring the redirect"
@@ -24,18 +16,26 @@ describe "RDaneel when there are no redirects" do
 
   (301..302).each do |status|
 
-    describe "when robots.txt has been moved (#{status})" do
+    describe "when robots.txt has been moved (http code #{status})" do
+      before(:each) do
+        burrito.mount( :path  => '/hello_world', :status => 200,
+                        :body  => 'Hello World!', :block  => should_be_hit_once )
+        burrito.mount( :path  => '/robots.txt',  :status => status,
+                        :location => 'http://127.0.0.1:8080/golems.txt',
+                        :block => should_be_hit_once )
+        burrito.mount( :path  => '/golems.txt',  :status => 200,
+                        :block => should_not_be_hit )
+      end
+
+      after(:each) do
+        burrito.unmount('/hello_world')
+        burrito.unmount('/robots.txt')
+        burrito.unmount('/golems.txt')
+      end
 
       it "should get the content ignoring the redirect" do
 
         EM.run do
-          @burrito.mount( :path  => '/hello_world', :status => 200,
-                          :body  => 'Hello World!', :block  => should_be_hit_once )
-          @burrito.mount( :path  => '/robots.txt',  :status => status,
-                          :location => 'http://127.0.0.1:8080/golems.txt',
-                          :block => should_be_hit_once )
-          @burrito.mount( :path  => '/golems.txt',  :status => 200,
-                          :block => should_not_be_hit )
           r = RDaneel.new("http://127.0.0.1:8080/hello_world")
           r.callback do
             r.http_client.response_header.status.should == 200
@@ -59,14 +59,21 @@ describe "RDaneel when there are no redirects" do
   (400..417).each do |status|
 
     describe "when there is a CLIENT error #{status} associated to robots.txt" do
+      before(:each) do
+        burrito.mount( :path  => '/hello_world', :status => 200,
+                          :body  => 'Hello World!', :block  => should_be_hit_once )
+        burrito.mount( :path  => '/robots.txt',  :status => status,
+                          :block => should_be_hit_once )
+      end
+
+      after(:each) do
+        burrito.unmount('/hello_world')
+        burrito.unmount('/robots.txt')
+      end
 
       it "should get the content" do
 
         EM.run do
-          @burrito.mount( :path  => '/hello_world', :status => 200,
-                          :body  => 'Hello World!', :block  => should_be_hit_once )
-          @burrito.mount( :path  => '/robots.txt',  :status => status,
-                          :block => should_be_hit_once )
           r = RDaneel.new("http://127.0.0.1:8080/hello_world")
           r.callback do
             r.http_client.response_header.status.should == 200
@@ -90,14 +97,21 @@ describe "RDaneel when there are no redirects" do
   (500..505).each do |status|
 
     describe "when there is a SERVER error #{status} associated to robots.txt" do
+      before(:each) do
+        burrito.mount( :path  => '/hello_world', :status => 200,
+                        :body  => 'Hello World!', :block  => should_be_hit_once )
+        burrito.mount( :path  => '/robots.txt',  :status => status,
+                        :block => should_be_hit_once )
+      end
+
+      after (:each) do
+        burrito.unmount('/hello_world')
+        burrito.unmount('/robots.txt')
+      end
 
       it "should get the content" do
 
         EM.run do
-          @burrito.mount( :path  => '/hello_world', :status => 200,
-                          :body  => 'Hello World!', :block  => should_be_hit_once )
-          @burrito.mount( :path  => '/robots.txt',  :status => status,
-                          :block => should_be_hit_once )
           r = RDaneel.new("http://127.0.0.1:8080/hello_world")
           r.callback do
             r.http_client.response_header.status.should == 200

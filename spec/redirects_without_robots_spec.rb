@@ -4,27 +4,25 @@ describe "RDaneel when there are redirects" do
 
   describe "when there is no robots.txt in the host (ONLY one host)" do
 
-    before(:each) do
-      @burrito = Burrito.new
-    end
-
-    after(:each) do
-      @burrito.stop
-    end
-
     describe "when no redirection limit has been set" do
-
-      it "should not follow redirects" do
-
-        @burrito.mount( :path  => '/robots.txt',  :status => 404,
+      before(:each) do
+        burrito.mount( :path  => '/robots.txt',  :status => 404,
                         :block => should_be_hit_once )
-        @burrito.mount( :path  => '/redirect_me', :status => 301,
+        burrito.mount( :path  => '/redirect_me', :status => 301,
                         :location  => 'http://127.0.0.1:8080/hello_world',
                         :block  => should_be_hit_once )
-        @burrito.mount( :path  => '/hello_world', :status => 200,
+        burrito.mount( :path  => '/hello_world', :status => 200,
                         :body  => 'Hello World!',
                         :block  => should_not_be_hit )
+      end
 
+      after(:each) do
+        burrito.unmount('/robots.txt')
+        burrito.unmount('/redirect_me')
+        burrito.unmount('/hello_world')
+      end
+
+      it "should not follow redirects" do
         EM.run do
           r = RDaneel.new("http://127.0.0.1:8080/redirect_me")
           r.callback do
@@ -46,20 +44,28 @@ describe "RDaneel when there are redirects" do
     describe "when a maximum number or redirects is set" do
 
       describe "when there are less redirects than the maximum specified" do
-
-        it "should get the content following all the redirects" do
-
-          @burrito.mount( :path  => '/robots.txt',  :status => 404,
+        before(:each) do
+          burrito.mount( :path  => '/robots.txt',  :status => 404,
                           :block => should_be_hit(3) )
-          @burrito.mount( :path  => '/redirect_me', :status => 301,
+          burrito.mount( :path  => '/redirect_me', :status => 301,
                           :location  => 'http://127.0.0.1:8080/redirect_me_again',
                           :block  => should_be_hit_once )
-          @burrito.mount( :path  => '/redirect_me_again', :status => 301,
+          burrito.mount( :path  => '/redirect_me_again', :status => 301,
                           :location  => 'http://127.0.0.1:8080/hello_world',
                           :block  => should_be_hit_once )
-          @burrito.mount( :path  => '/hello_world', :status => 200,
+          burrito.mount( :path  => '/hello_world', :status => 200,
                           :body  => 'Hello World!',
                           :block  => should_be_hit_once )
+        end
+
+        after(:each) do
+          burrito.unmount('/robots.txt')
+          burrito.unmount('/redirect_me')
+          burrito.unmount('/redirect_me_again')
+          burrito.unmount('/hello_world')
+        end
+
+        it "should get the content following all the redirects" do
           EM.run do
             r = RDaneel.new("http://127.0.0.1:8080/redirect_me")
             r.callback do
@@ -82,17 +88,24 @@ describe "RDaneel when there are redirects" do
       end
 
       describe "when there are as many redirects as the maximum" do
-
-        it "should get the content following all the redirects" do
-
-          @burrito.mount( :path  => '/robots.txt',  :status => 404,
+        before(:each) do
+          burrito.mount( :path  => '/robots.txt',  :status => 404,
                           :block => should_be_hit_twice )
-          @burrito.mount( :path  => '/redirect_me', :status => 301,
+          burrito.mount( :path  => '/redirect_me', :status => 301,
                           :location  => 'http://127.0.0.1:8080/hello_world',
                           :block  => should_be_hit_once )
-          @burrito.mount( :path  => '/hello_world', :status => 200,
+          burrito.mount( :path  => '/hello_world', :status => 200,
                           :body  => 'Hello World!',
                           :block  => should_be_hit_once )
+        end
+
+        after(:each) do
+          burrito.unmount('/robots.txt')
+          burrito.unmount('/redirect_me')
+          burrito.unmount('/hello_world')
+        end
+
+        it "should get the content following all the redirects" do
           EM.run do
             r = RDaneel.new("http://127.0.0.1:8080/redirect_me")
             r.callback do
@@ -114,21 +127,28 @@ describe "RDaneel when there are redirects" do
       end
 
       describe "when the number of redirects exceed the maximum specified" do
-
-        it "should stop following redirects once the  maximum specified is reached" do
-
-          @burrito.mount( :path  => '/robots.txt',  :status => 404,
+        before(:each) do
+          burrito.mount( :path  => '/robots.txt',  :status => 404,
                           :block => should_be_hit_twice )
-          @burrito.mount( :path  => '/redirect_me', :status => 301,
+          burrito.mount( :path  => '/redirect_me', :status => 301,
                           :location  => 'http://127.0.0.1:8080/redirect_me_again',
                           :block  => should_be_hit_once )
-          @burrito.mount( :path  => '/redirect_me_again', :status => 301,
+          burrito.mount( :path  => '/redirect_me_again', :status => 301,
                           :location  => 'http://127.0.0.1:8080/hello_world',
                           :block  => should_be_hit_once )
-          @burrito.mount( :path  => '/hello_world', :status => 200,
+          burrito.mount( :path  => '/hello_world', :status => 200,
                           :body  => 'Hello World!',
                           :block  => should_not_be_hit )
+        end
 
+        after(:each) do
+          burrito.unmount('/robots.txt')
+          burrito.unmount('/redirect_me')
+          burrito.unmount('/redirect_me_again')
+          burrito.unmount('/hello_world')
+        end
+
+        it "should stop following redirects once the  maximum specified is reached" do
           EM.run do
             r = RDaneel.new("http://127.0.0.1:8080/redirect_me")
             r.callback do
