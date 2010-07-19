@@ -9,7 +9,7 @@ begin
     gem.description = %Q{Add robots.txt support on top of em-http-request}
     gem.email = "edgargonzalez@gmail.com"
     gem.homepage = "http://github.com/hasmanydevelopers/RDaneel"
-    gem.authors = ["Edgar Gonzalez"]
+    gem.authors = ["Edgar Gonzalez", "Anibal Rojas"]
     gem.add_dependency("em-http-request", ">= 0.2.10")
     gem.add_dependency('robot_rules', '>= 0.9.1')
     gem.add_development_dependency "rspec", ">= 1.2.9"
