@@ -2,7 +2,7 @@
 
 An EventMachine+Ruby library to fetch urls following robots.txt rules.
 
-RDaneel is built it on top of @igrigorik's *em-http-request* http://github.com/igrigorik/em-http-request
+RDaneel is built it on top of @igrigorik's {em-http-request}[http://github.com/igrigorik/em-http-request]
 
 == Features
 
