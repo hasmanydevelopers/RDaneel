@@ -7,7 +7,7 @@ begin
     gem.name = "rdaneel"
     gem.summary = %Q{Obey robots.txt on top of em-http-request (Asynchronous HTTP Client)}
     gem.description = %Q{Add robots.txt support on top of em-http-request}
-    gem.email = "edgargonzalez@gmail.com"
+    gem.email = ["edgargonzalez@gmail.com", "anibalrojas@gmail.com"]
     gem.homepage = "http://github.com/hasmanydevelopers/RDaneel"
     gem.authors = ["Edgar Gonzalez", "Anibal Rojas"]
     gem.add_dependency("em-http-request", ">= 0.2.10")
