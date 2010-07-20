@@ -69,13 +69,19 @@ class RDaneel
     _get = lambda {
       if robots_cache && robots_file = robots_cache[robots_txt_url(current_uri)]
         if robots_allowed?(robots_file, useragent, current_uri)
-          h = EM::HttpRequest.new(current_uri).get(options)
-          h.callback(&_handle_uri_callback)
-          h.errback {
-            @http_client = h
-            @error = h.error
+          begin
+            h = EM::HttpRequest.new(current_uri).get(options)
+            h.callback(&_handle_uri_callback)
+            h.errback {
+              @http_client = h
+              @error = h.error
+              fail(self)
+            }
+          rescue StandardError => se
+            @http_client = EM::HttpClient.new("")
+            @error = "#{se.message}\n#{se.backtrace.inspect}"
             fail(self)
-          }
+          end
         else
           @http_client = EM::HttpClient.new("")
           @error = "robots denied"
@@ -87,13 +93,19 @@ class RDaneel
           robots_file = robots.response
           robots_cache[robots_txt_url(current_uri)] = robots_file if robots_cache
           if robots_allowed?(robots_file, useragent, current_uri)
-            h = EM::HttpRequest.new(current_uri).get(options)
-            h.callback(&_handle_uri_callback)
-            h.errback {
-              @http_client = h
-              @error = h.error
+            begin
+              h = EM::HttpRequest.new(current_uri).get(options)
+              h.callback(&_handle_uri_callback)
+              h.errback {
+                @http_client = h
+                @error = h.error
+                fail(self)
+              }
+            rescue StandardError => se
+              @http_client = EM::HttpClient.new("")
+              @error = "#{se.message}\n#{se.backtrace.inspect}"
               fail(self)
-            }
+            end
           else
             @http_client = EM::HttpClient.new("")
             @error = "robots denied"
