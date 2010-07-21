@@ -62,7 +62,7 @@ class RDaneel
         end
       else
         # other error
-        self.http_client = h
+        @http_client = h
         @error = "not success and not redirect"
         fail(self)
       end
