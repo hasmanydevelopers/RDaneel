@@ -3,7 +3,6 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 require 'rubygems'
 require 'rdaneel'
 require 'spec'
-require 'spec/autorun'
 require 'webrick'
 
 Spec::Runner.configure do |config|
