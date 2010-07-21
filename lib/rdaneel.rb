@@ -116,7 +116,7 @@ class RDaneel
           end
         }
         robots.errback {
-          robots_cache.put[robots_url.to_s] = "" if robots_cache
+          robots_cache[robots_url.to_s] = "" if robots_cache
           h = EM::HttpRequest.new(current_uri).get(options)
           h.callback(&_handle_uri_callback)
           h.errback {
