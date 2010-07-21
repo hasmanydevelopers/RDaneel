@@ -11,7 +11,7 @@ begin
     gem.homepage = "http://github.com/hasmanydevelopers/RDaneel"
     gem.authors = ["Edgar Gonzalez", "Anibal Rojas"]
     gem.add_dependency("em-http-request", ">= 0.2.10")
-    gem.add_dependency('robot_rules', '>= 0.9.2')
+    gem.add_dependency('robot_rules', '>= 0.9.3')
     gem.add_development_dependency "rspec", ">= 1.2.9"
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
