@@ -32,6 +32,7 @@ class Burrito
       @server.start
     }
     @server
+    sleep 0.2
   end
 
   def mount( opts )
