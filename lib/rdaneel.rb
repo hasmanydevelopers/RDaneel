@@ -67,8 +67,9 @@ class RDaneel
       end
     }
     _get = lambda {
-      if robots_cache && robots_file = robots_cache[robots_txt_url(current_uri)]
-        if robots_allowed?(robots_file, useragent, current_uri)
+      robots_url = robots_txt_url(current_uri)
+      if robots_cache && robots_file = robots_cache[robots_url.to_s]
+        if robots_allowed?(robots_file, useragent, robots_url, current_uri)
           begin
             h = EM::HttpRequest.new(current_uri).get(options)
             h.callback(&_handle_uri_callback)
@@ -88,11 +89,12 @@ class RDaneel
           fail(self)
         end
       else
-        robots = EM::HttpRequest.new(robots_txt_url(current_uri)).get
+        robots_url = robots_txt_url(current_uri)
+        robots = EM::HttpRequest.new(robots_url).get
         robots.callback {
           robots_file = robots.response
-          robots_cache[robots_txt_url(current_uri)] = robots_file if robots_cache
-          if robots_allowed?(robots_file, useragent, current_uri)
+          robots_cache[robots_url.to_s] = robots_file if robots_cache
+          if robots_allowed?(robots_file, useragent, robots_url, current_uri)
             begin
               h = EM::HttpRequest.new(current_uri).get(options)
               h.callback(&_handle_uri_callback)
@@ -113,7 +115,7 @@ class RDaneel
           end
         }
         robots.errback {
-          robots_cache.put[robots_txt_url(current_uri)] = "" if robots_cache
+          robots_cache.put[robots_url.to_s] = "" if robots_cache
           h = EM::HttpRequest.new(current_uri).get(options)
           h.callback(&_handle_uri_callback)
           h.errback {
@@ -133,10 +135,10 @@ class RDaneel
 
   protected
 
-  def robots_allowed?(robots_file, useragent, u)
+  def robots_allowed?(robots_file, useragent, robots_url, url)
     rules = RobotRules.new(useragent)
-    rules.parse(u.to_s, robots_file)
-    rules.allowed? u.to_s
+    rules.parse(robots_url, robots_file)
+    rules.allowed? url
   end
 
   def robots_txt_url(u)
@@ -145,7 +147,7 @@ class RDaneel
     else
       "#{u.host}:#{u.port}"
     end
-    "http://#{location}/robots.txt"
+    Addressable::URI.parse("http://#{location}/robots.txt")
   end
 
   def success?(http_client)
