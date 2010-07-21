@@ -21,6 +21,7 @@ class RDaneel
 
   def initialize(uri)
     @uri = uri.kind_of?(Addressable::URI) ? uri : Addressable::URI::parse(uri)
+    @uri.path = "/" if @uri.path.nil? || @uri.path == ""
     @redirects = []
   end
 
