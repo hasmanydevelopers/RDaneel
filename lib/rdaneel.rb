@@ -161,8 +161,9 @@ class RDaneel
 
   def redirect_url(http_client, u)
     location = Addressable::URI.parse(http_client.response_header.location)
-    return u.join(location) if location.relative?
-    return location
+    location = u.join(location) if location.relative?
+    location.path = "/" if location.path.nil? || location.path == ""
+    location
   end
 end
 
