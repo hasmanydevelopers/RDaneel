@@ -137,9 +137,13 @@ class RDaneel
   protected
 
   def robots_allowed?(robots_file, useragent, robots_url, url)
-    rules = RobotRules.new(useragent)
-    rules.parse(robots_url, robots_file)
-    rules.allowed? url
+    begin
+      rules = RobotRules.new(useragent)
+      rules.parse(robots_url, robots_file)
+      return rules.allowed? url
+    rescue StandardError => err
+      return true
+    end
   end
 
   def robots_txt_url(u)
