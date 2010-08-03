@@ -19,10 +19,16 @@ class RDaneel
   attr_accessor :uri
   attr_reader :error, :redirects, :http_client
 
-  def initialize(uri)
+  def initialize(uri,options = {})
     @uri = uri.kind_of?(Addressable::URI) ? uri : Addressable::URI::parse(uri)
     @uri.path = "/" if @uri.path.nil? || @uri.path == ""
     @redirects = []
+    @logger = options[:logger]
+    unless @logger
+      require 'logger'
+      @logger = Logger.new(STDERR)
+      @logger.level = Logger::FATAL
+    end
   end
 
   def get(opts = {})
@@ -42,15 +48,18 @@ class RDaneel
         if @redirects.size >= max_redirects
           @http_client = h
           @error = "Exceeded maximum number of redirects"
+          @logger.info(@error)
           fail(self)
           return
         end
         begin
+          @logger.info("Redirected to: #{current_uri.to_s}")
           @redirects << current_uri.to_s
           current_uri = redirect_url(h, current_uri)
           if @redirects.include?(current_uri.to_s)
             @http_client = h
             @error = "infinite redirect"
+            @logger.info(@error)
             fail(self)
             return
           end
@@ -58,12 +67,14 @@ class RDaneel
         rescue
           @http_client = h
           @error = "mal formed redirected url"
+          @logger.info(@error)
           fail(self)
         end
       else
         # other error
         @http_client = h
         @error = "not success and not redirect"
+        @logger.info(@error)
         fail(self)
       end
     }
@@ -169,5 +180,6 @@ class RDaneel
     location.path = "/" if location.path.nil? || location.path == ""
     location
   end
+
 end
 
