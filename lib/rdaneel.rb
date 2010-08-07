@@ -213,7 +213,7 @@ class RDaneel
   private
   
   def hashed_puts( prefix, message )
-    $stdout.puts("[#{@hash}] #{prefix} #{message}")  
+    $stdout.puts("[#{@hash}] [#{Time.now.strftime('%Y-%m-%d %H:%m:%S')}] #{prefix} #{message}")  
   end
 
 end
