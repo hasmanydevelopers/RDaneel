@@ -202,7 +202,8 @@ class RDaneel
         when :status
           hashed_puts('<', client.response_header.status)        
         when :request  # this is a options hash
-          client.options.each { |k,v| hashed_puts('>', "#{k}: #{v}") }
+          headers = client.options[:head]
+          headers.each { |k,v| hashed_puts('>', "#{k}: #{v}") } if headers
         when :response # this is an array
           client.response_header.each { |r| hashed_puts('<', "#{r[0]}: #{r[1]}") }
       end
