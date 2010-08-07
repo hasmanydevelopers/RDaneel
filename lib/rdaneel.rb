@@ -39,112 +39,114 @@ class RDaneel
       if success?(h)
         @uri = current_uri if current_uri != @uri
         @http_client = h
-        verbalize("Succeded fetching: #{current_uri}",:status,:response)
+        verbose("Succeded fetching: #{current_uri}",:status,:response)
         succeed(self)
       elsif redirected?(h)
         if @redirects.size >= max_redirects
           @http_client = h
-          @error = "Exceeded maximum number of redirects (#{max_redirects})"
-          puts("#{@hash} #{@error} for #{@uri}") if @verbose
+          @error = "Exceeded maximum number of redirects: #{max_redirects}"
+          verbose(@error,:status,:response)          
           fail(self)
           return
         end
         begin
           @redirects << current_uri.to_s
           current_uri = redirect_url(h, current_uri)
-          puts("#{@hash} Redirected to: #{current_uri.to_s} from #{@redirects[-1]}") if @verbose
+          verbose("Redirected to: #{current_uri.to_s} from: #{@redirects[-1]}",:status,:response)                    
           if @redirects.include?(current_uri.to_s)
             @http_client = h
-            @error = "infinite redirect"
-            puts("#{@hash} #{@error} for #{@uri}") if @verbose
+            @error = "Infinite redirect detected for: #{current_uri.to_s}"
+            verbose(@error,:status,:response)          
             fail(self)
             return
           end
           _get.call
         rescue
           @http_client = h
-          @error = "mal formed redirected url"
-          puts("#{@hash} #{@error} for #{@uri}") if @verbose
+          @error = "Malformed redirect url"
+          verbose(@error,:status,:response)
           fail(self)
         end
       else
         # other error
         @http_client = h
-        @error = "not success and not redirect"
-        puts("#{@hash} #{@error} for #{@uri}") if @verbose
+        @error = "Not success neither redirect"
+        verbose(@error,:status,:response)
         fail(self)
       end
     }
     _get = lambda {
       robots_url = robots_txt_url(current_uri)
+      verbose("robots.txt URL for: #{current_uri} is: #{robots_url}")
       if robots_cache && robots_file = robots_cache[robots_url.to_s]
-        puts("#{@hash} Found cached robots.txt(#{robots_url.to_s}):\n#{robots_cache[robots_url.to_s]}") if @verbose
+        verbose("Found cached robots.txt:\n#{robots_cache[robots_url.to_s]}")
         if robots_allowed?(robots_file, useragent, robots_url, current_uri)
-          puts("#{@hash} Robots are allowed to access #{current_uri}") if @verbose
+          verbose("Robots identified by user agent: #{useragent} are allowed to access: #{current_uri}")
           begin
-            puts("#{@hash} Started fetching: #{current_uri}") if @verbose
+            verbose("Started fetching: #{current_uri}",:request)
             h = EM::HttpRequest.new(current_uri).get(options)
             h.callback(&_handle_uri_callback)
             h.errback {
               @http_client = h
               @error = h.error
-              puts("#{@hash} #{@error} for #{@uri}") if @verbose
+              verbose("#{@error} for: #{@uri}",:status,:response)
               fail(self)
             }
           rescue StandardError => se
             @http_client = EM::HttpClient.new("")
             @error = "#{se.message}\n#{se.backtrace.inspect}"
-            puts("#{@hash} #{@error} for #{@uri}") if @verbose
+            verbose("For: #{current_uri} something went wrong: #{@error}")
             fail(self)
           end
         else
           @http_client = EM::HttpClient.new("")
-          @error = "robots denied"
-          puts("#{@hash} #{@error} for #{@uri}") if @verbose
+          @error = "Robots are not allowed"
+          verbose("#{@error} to access: #{current_uri} when identified by user agent: #{useragent}")
           fail(self)
         end
       else
         robots_url = robots_txt_url(current_uri)
-        puts("#{@hash} Started fetching robots.txt from: #{robots_url} for #{current_uri}") if @verbose
+        verbose("Started fetching robots.txt from: #{robots_url} for: #{current_uri}",:request) 
         robots = EM::HttpRequest.new(robots_url).get
         robots.callback {
           robots_file = robots.response
-          puts("#{@hash} Found robots.txt at #{current_uri}:\n#{robots_file}") if @verbose
+          verbose("Found robots.txt at #{robots_url}:\n#{robots_file}")
           robots_cache[robots_url.to_s] = robots_file if robots_cache
           if robots_allowed?(robots_file, useragent, robots_url, current_uri)
-            puts("#{@hash} Robots are allowed to access #{current_uri}") if @verbose
+            verbose("Robots identified by user agent: #{useragent} are allowed to access: #{current_uri}")
             begin
-              puts("#{@hash} Started fetching: #{current_uri}") if @verbose
+              verbose("Started fetching: #{current_uri}",:request)
               h = EM::HttpRequest.new(current_uri).get(options)
               h.callback(&_handle_uri_callback)
               h.errback {
                 @http_client = h
                 @error = h.error
-                puts("#{@hash} #{@error} for #{@uri}") if @verbose
+                verbose("#{@error} for: #{current_uri}",:status,:response)
                 fail(self)
               }
             rescue StandardError => se
               @http_client = EM::HttpClient.new("")
               @error = "#{se.message}\n#{se.backtrace.inspect}"
-              puts("#{@hash} #{@error} for #{@uri}") if @verbose
+              verbose("For: #{current_uri} something went wrong: #{@error}")
               fail(self)
             end
           else
             @http_client = EM::HttpClient.new("")
-            @error = "robots denied"
-            puts("#{@hash} #{@error} for #{@uri}") if @verbose
+            @error = "Robots are not allowed"
+            verbose("#{@error} to access: #{current_uri} when identified by user agent: #{useragent}")
             fail(self)
           end
         }
         robots.errback {
+          verbose("Failed to fetch robots.txt: from: #{robots_url} for: #{current_uri}",:status, :response)
           robots_cache[robots_url.to_s] = "" if robots_cache
-          puts("#{@hash} Started fetching: #{current_uri}") if @verbose
+          verbose("Started fetching: #{current_uri}",:request)
           h = EM::HttpRequest.new(current_uri).get(options)
           h.callback(&_handle_uri_callback)
           h.errback {
             @http_client = h
             @error = h.error
-            puts("#{@hash} #{@error} for #{@uri}") if @verbose
+            verbose("#{@error} for: #{current_uri}",:status,:response)
             fail(self)
           }
         }
@@ -193,7 +195,7 @@ class RDaneel
     location
   end
 
-  def verbalize(message, *args)
+  def verbose(message, *args)
     return unless @verbose
     hashed_puts('*', message)
     args.each do |a|
