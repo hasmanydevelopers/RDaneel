@@ -24,7 +24,7 @@ class RDaneel
     @uri.path = "/" if @uri.path.nil? || @uri.path == ""
     @redirects = []
     @verbose = options[:verbose]
-    @hash = "[#{@uri.hash}]" if @verbose
+    @hash = @uri.hash if @verbose
   end
 
   def get(opts = {})
@@ -39,7 +39,7 @@ class RDaneel
       if success?(h)
         @uri = current_uri if current_uri != @uri
         @http_client = h
-        puts("#{@hash} Succeded fetching: #{current_uri} (#{@uri})") if @verbose
+        verbalize("Succeded fetching: #{current_uri}",:status,:response)
         succeed(self)
       elsif redirected?(h)
         if @redirects.size >= max_redirects
@@ -191,6 +191,27 @@ class RDaneel
     location = u.join(location) if location.relative?
     location.path = "/" if location.path.nil? || location.path == ""
     location
+  end
+
+  def verbalize(message, *args)
+    return unless @verbose
+    hashed_puts('*', message)
+    args.each do |a|
+      case a
+        when :status
+          hashed_puts('<', @http_client.response_header.status)        
+        when :request
+          @http_client.request_header.each { |r| hashed_puts('>', "#{r[0]}: #{r[1]}") }	
+        when :response
+          @http_client.response_header.each { |r| hashed_puts('<', "#{r[0]}: #{r[1]}") }
+      end
+    end
+  end
+  
+  private
+  
+  def hashed_puts( prefix, message )
+    $stdout.puts("[#{@hash}] #{prefix} #{message}")  
   end
 
 end
