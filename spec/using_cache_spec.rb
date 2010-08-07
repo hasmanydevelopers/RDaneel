@@ -7,13 +7,13 @@ describe "RDaneel when there is a cache" do
     before(:each) do
       RDaneel.robots_cache = {}
       burrito.mount( :path  => '/robots.txt',  :status => 404,
-                      :block => should_be_hit_once )
+                     :block => should_be_hit_once )
       burrito.mount( :path  => '/redirect_me', :status => 301,
-                      :location  => 'http://127.0.0.1:8080/hello_world',
-                      :block  => should_be_hit_once )
+                     :location  => 'http://127.0.0.1:8080/hello_world',
+                     :block  => should_be_hit_once )
       burrito.mount( :path  => '/hello_world', :status => 200,
-                      :body  => 'Hello World!',
-                      :block  => should_be_hit_once )
+                     :body  => 'Hello World!',
+                     :block  => should_be_hit_once )
     end
 
     after(:each) do
