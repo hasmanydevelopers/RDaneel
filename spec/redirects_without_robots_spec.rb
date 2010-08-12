@@ -31,7 +31,7 @@ describe "RDaneel when there are redirects" do
           end
           r.errback do
             r.redirects.should be_empty
-            r.error.should == "Exceeded maximum number of redirects"
+            r.error.should == "Exceeded maximum number of redirects: 0"
             EM.stop
           end
           r.get
@@ -157,7 +157,7 @@ describe "RDaneel when there are redirects" do
             end
             r.errback do
               r.redirects.should == ['http://127.0.0.1:8080/redirect_me']
-              r.error.should == "Exceeded maximum number of redirects"
+              r.error.should == "Exceeded maximum number of redirects: 1"
               EM.stop
             end
             r.get(:redirects => 1)
