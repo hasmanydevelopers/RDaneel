@@ -91,7 +91,7 @@ class RDaneel
         end
       else
         robots_url = robots_txt_url(current_uri)
-        robots = EM::HttpRequest.new(robots_url).get(:redirects => max_redirects) # get the robots.txt following redirects
+        robots = EM::HttpRequest.new(robots_url).get(:redirects => 2) # get the robots.txt following redirects
         robots.callback {
           robots_file = robots.response
           robots_cache[robots_url.to_s] = robots_file if robots_cache
