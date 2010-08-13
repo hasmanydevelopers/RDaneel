@@ -5,57 +5,66 @@ require 'rdaneel'
 require 'spec'
 require 'webrick'
 
-Spec::Runner.configure do |config|
-  config.before :suite do
-    burrito
+# keep webrick quiet
+class ::WEBrick::HTTPServer
+  def access_log(config, req, res)
+    # nop
   end
-  config.after :suite do
-    burrito.stop
+end
+class ::WEBrick::BasicLog
+  def log(level, data)
+    # nop
   end
 end
 
-def burrito
-  Thread.current[:burrito] ||= Burrito.new
+def locked_file
+  File.join(File.dirname(__FILE__),"server_lock-#{@__port}")
 end
 
-class Burrito
+def server_setup(port=8080, &blk)
+  @__port = port
+  if @server.nil? and !File.exist?(locked_file)
+    File.open(locked_file,'w') {|f| f << 'locked' }
+    @server = WEBrick::HTTPServer.new :Port => port
+    blk.call(@server) if blk
+    queue = Queue.new # synchronize the thread startup to the main thread
+    @test_thread = Thread.new { queue << 1; @server.start }
 
-  def initialize( options={}, &blk )
-    webrick_log_file = '/dev/null'  # disable logging
-    webrick_logger = WEBrick::Log.new(webrick_log_file, WEBrick::Log::DEBUG)
-    access_log_stream = webrick_logger
-    access_log = [[ access_log_stream, WEBrick::AccessLog::COMBINED_LOG_FORMAT ]]
-    default_opts = {:Port => 8080, :Logger => webrick_logger, :AccessLog => access_log }
-    @server = WEBrick::HTTPServer.new( default_opts.merge(options) )
-    @server_thread = Thread.new {
-      blk.call(@server) if blk
-      @server.start
-    }
-    @server
-    sleep 0.5
+    # wait for the queue
+    value = queue.pop
+
+    if !value
+      STDERR.puts "Failed to startup test server!"
+      exit(1)
+    end
+
+    trap("INT"){server_shutdown}
+    at_exit{server_shutdown}
   end
+end
 
-  def mount( opts )
-    raise ":path is required" if opts[:path].nil?
-    raise ":status is required" if opts[:status].nil?
-    @server.mount_proc( opts[:path],
-      lambda { |req, resp|
-               resp.status = opts[:status]
-               resp.body = opts[:body] unless opts[:body].nil?
-               resp['Location'] = opts[:location] unless opts[:location].nil?
-               opts[:block].call unless opts[:block].nil?
-             } )
+def server_shutdown
+  begin
+    if File.exist?(locked_file)
+      File.unlink locked_file
+      @server.shutdown unless @server.nil?
+      @server = nil
+    end
+  rescue Object => e
+    puts "Error #{__FILE__}:#{__LINE__}\n#{e.message}"
   end
+end
 
-  def stop
-    @server.shutdown
-    @server_thread.join
-  end
-
-  def unmount(path)
-    @server.unmount(path)
-  end
-
+def mount(server, opts)
+  raise ":path is required" if opts[:path].nil?
+  raise ":status is required" if opts[:status].nil?
+  server.mount_proc( opts[:path],
+    lambda { |req, resp|
+             resp.status = opts[:status]
+             resp.body = opts[:body] unless opts[:body].nil?
+             resp['Location'] = opts[:location] unless opts[:location].nil?
+             opts[:block].call unless opts[:block].nil?
+           } )
 end
 
 def should_not_be_hit
@@ -74,5 +83,8 @@ def should_be_hit( times = 1 )
   l = lambda {}
   m = l.should_receive(:call).exactly(times).times
   return l
+end
+
+Spec::Runner.configure do |config|
 end
 
