@@ -86,5 +86,8 @@ def should_be_hit( times = 1 )
 end
 
 Spec::Runner.configure do |config|
+  config.before :suite do
+    puts "\e[4mThese specs could take a while, please be patience\e[0m"
+  end
 end
 
