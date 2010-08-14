@@ -105,7 +105,7 @@ class RDaneel
         end
       else
         robots_url = robots_txt_url(current_uri)
-        robots = EM::HttpRequest.new(robots_url).get
+        robots = EM::HttpRequest.new(robots_url).get(:redirects => 2) # get the robots.txt following redirects
         verbose("Started fetching robots.txt from: #{robots_url} for: #{current_uri}",robots,:request) 
         robots.callback {
           robots_file = robots.response
