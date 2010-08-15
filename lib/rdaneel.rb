@@ -200,7 +200,11 @@ class RDaneel
     args.each do |a|
       case a
         when :status
-          hashed_puts('< Status:', client.response_header.status)        
+          if client.response_header.status == 0
+            hashed_puts('< Status:', '0 (timeout)')
+          else
+            hashed_puts('< Status:', client.response_header.status)        
+          end
         when :request  # this is a options hash
           headers = client.options[:head]
           headers.each { |k,v| hashed_puts('>', "#{k}: #{v}") } if headers
