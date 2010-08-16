@@ -2,6 +2,10 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe "RDaneel when there is a cache" do
 
+  describe "when the port has not been specified" do
+    it "should fetch the robots.txt just once"
+  end
+
   let(:port) {8082}
 
   describe "when there is no robots.txt in the host" do
@@ -24,7 +28,7 @@ describe "RDaneel when there is a cache" do
       server_shutdown
     end
 
-    it "should try to get the robots.txt just once" do
+    it "should fetch the robots.txt just once" do
       EM.run do
         r = RDaneel.new("http://127.0.0.1:#{port}/redirect_me")
         r.callback do
