@@ -2,7 +2,7 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe "RDaneel when there are redirects" do
 
-  let(:port) {8081}
+  let(:port) {8080}
 
   describe "when there is no robots.txt in the host (ONLY one host)" do
 

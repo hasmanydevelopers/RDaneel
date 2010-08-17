@@ -2,9 +2,9 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe "RDaneel when there is a cache" do
 
-  let(:port) {8082}
+  let(:port) {8080}
 
-  describe "when there is no robots.txt in the host" do
+  describe "when there is no robots.txt in the host and url is redirected" do
 
     before(:each) do
       RDaneel.robots_cache = {}
@@ -40,6 +40,8 @@ describe "RDaneel when there is a cache" do
         end
         r.get(:redirects => 3)
       end
+puts "***********"
+puts @strio.string
     end
   end
 end

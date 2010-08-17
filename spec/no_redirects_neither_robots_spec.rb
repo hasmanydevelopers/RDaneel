@@ -2,7 +2,7 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe "RDaneel when there are no redirects" do
 
-  let(:port) {8083}
+  let(:port) {8080}
 
   describe "when a successfull status different than 200 is issued for robots.txt" do
     it "should get the content ignoring the redirect"
@@ -16,11 +16,11 @@ describe "RDaneel when there are no redirects" do
 
     describe "when robots.txt has been moved (http code #{status})" do
       before(:each) do
-        server_setup(port+status) do |server|
+        server_setup(port) do |server|
           mount(server, :path  => '/hello_world', :status => 200,
                         :body  => 'Hello World!', :block  => should_be_hit_once )
           mount(server, :path  => '/robots.txt',  :status => status,
-                        :location => "http://127.0.0.1:#{port+status}/golems.txt",
+                        :location => "http://127.0.0.1:#{port}/golems.txt",
                         :block => should_be_hit_once )
           mount(server, :path  => '/golems.txt',  :status => 200,
                         :block => should_be_hit_once )
@@ -33,7 +33,7 @@ describe "RDaneel when there are no redirects" do
 
       it "should get the redirected robots.txt and the content" do
         EM.run do
-          r = RDaneel.new("http://127.0.0.1:#{port+status}/hello_world")
+          r = RDaneel.new("http://127.0.0.1:#{port}/hello_world")
           r.callback do
             r.http_client.response_header.status.should == 200
             r.http_client.response.should == "Hello World!"
@@ -56,7 +56,7 @@ describe "RDaneel when there are no redirects" do
 
     describe "when there is a CLIENT error #{status} associated to robots.txt" do
       before(:each) do
-        server_setup(port+status) do |server|
+        server_setup(port) do |server|
           mount(server, :path  => '/hello_world', :status => 200,
                         :body  => 'Hello World!', :block  => should_be_hit_once )
           mount(server, :path  => '/robots.txt',  :status => status,
@@ -70,7 +70,7 @@ describe "RDaneel when there are no redirects" do
 
       it "should get the content" do
         EM.run do
-          r = RDaneel.new("http://127.0.0.1:#{port+status}/hello_world")
+          r = RDaneel.new("http://127.0.0.1:#{port}/hello_world")
           r.callback do
             r.http_client.response_header.status.should == 200
             r.http_client.response.should == "Hello World!"
@@ -93,7 +93,7 @@ describe "RDaneel when there are no redirects" do
 
     describe "when there is a SERVER error #{status} associated to robots.txt" do
       before(:each) do
-        server_setup(port+status) do |server|
+        server_setup(port) do |server|
           mount(server, :path  => '/hello_world', :status => 200,
                         :body  => 'Hello World!', :block  => should_be_hit_once )
           mount(server, :path  => '/robots.txt',  :status => status,
@@ -107,7 +107,7 @@ describe "RDaneel when there are no redirects" do
 
       it "should get the content" do
         EM.run do
-          r = RDaneel.new("http://127.0.0.1:#{port+status}/hello_world")
+          r = RDaneel.new("http://127.0.0.1:#{port}/hello_world")
           r.callback do
             r.http_client.response_header.status.should == 200
             r.http_client.response.should == "Hello World!"

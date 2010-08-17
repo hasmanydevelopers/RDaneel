@@ -3,19 +3,8 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 require 'rubygems'
 require 'rdaneel'
 require 'spec'
+require 'stringio'
 require 'webrick'
-
-# keep webrick quiet
-class ::WEBrick::HTTPServer
-  def access_log(config, req, res)
-    # nop
-  end
-end
-class ::WEBrick::BasicLog
-  def log(level, data)
-    # nop
-  end
-end
 
 def locked_file
   File.join(File.dirname(__FILE__),"server_lock-#{@__port}")
@@ -25,7 +14,14 @@ def server_setup(port=8080, &blk)
   @__port = port
   if @server.nil? and !File.exist?(locked_file)
     File.open(locked_file,'w') {|f| f << 'locked' }
-    @server = WEBrick::HTTPServer.new :Port => port
+    @strio = StringIO.new
+    access_log_stream = WEBrick::Log.new(@strio, WEBrick::Log::DEBUG)
+    access_log = [[ access_log_stream, "[%s] %U" ]]
+    webrick_logger = WEBrick::Log.new('/dev/null', WEBrick::Log::DEBUG)
+    @server = WEBrick::HTTPServer.new(
+                :Port => port,
+                :Logger => webrick_logger,
+                :AccessLog => access_log)
     blk.call(@server) if blk
     queue = Queue.new # synchronize the thread startup to the main thread
     @test_thread = Thread.new { queue << 1; @server.start }
@@ -80,9 +76,9 @@ def should_be_hit_twice
 end
 
 def should_be_hit( times = 1 )
-  l = lambda {}
-  m = l.should_receive(:call).exactly(times).times
-  return l
+#  l = lambda {}
+#  m = l.should_receive(:call).exactly(times).times
+#  return l
 end
 
 Spec::Runner.configure do |config|
