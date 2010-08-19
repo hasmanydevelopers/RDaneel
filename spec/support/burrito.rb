@@ -51,11 +51,11 @@ class Burrito
              } )
   end
 
-  def requests
+  def served_requests
     strio = StringIO.new(@strio_log.string)
     result = []
     strio.each do |line|
-      result << {:status => line[23,3],
+      result << {:status => line[23,3].to_i,
                     :url => line[/\/.*/]}
     end
     result

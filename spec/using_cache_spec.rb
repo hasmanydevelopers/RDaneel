@@ -29,8 +29,12 @@ describe "RDaneel when there is a cache" do
           r.http_client.response.should == "Hello World!"
           r.redirects.should == [ "http://127.0.0.1:#{port}/redirect_me"]
           r.uri.to_s.should == "http://127.0.0.1:#{port}/hello_world"
-puts "***********"
-puts @server.requests.inspect
+
+          served_requests = @server.served_requests
+          served_requests.size.should == 3
+          served_requests[0].should == {:status => 404, :url => "/robots.txt"}
+          served_requests[1].should == {:status => 301, :url => "/redirect_me"}
+          served_requests[2].should == {:status => 200, :url => "/hello_world"}
           EM.stop
         end
         r.errback do

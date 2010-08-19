@@ -16,19 +16,17 @@ describe "RDaneel when there are no redirects" do
 
     describe "when robots.txt has been moved (http code #{status})" do
       before(:each) do
-        server_setup(port) do |server|
-          mount(server, :path  => '/hello_world', :status => 200,
-                        :body  => 'Hello World!', :block  => should_be_hit_once )
-          mount(server, :path  => '/robots.txt',  :status => status,
-                        :location => "http://127.0.0.1:#{port}/golems.txt",
-                        :block => should_be_hit_once )
-          mount(server, :path  => '/golems.txt',  :status => 200,
-                        :block => should_be_hit_once )
-        end
+        @server = Burrito.new(port)
+        @server.mount(:path  => '/hello_world', :status => 200,
+                      :body  => 'Hello World!')
+        @server.mount(:path  => '/robots.txt',  :status => status,
+                      :location => "http://127.0.0.1:#{port}/golems.txt")
+        @server.mount(:path  => '/golems.txt',  :status => 200)
+        @server.start
       end
 
       after(:each) do
-        server_shutdown
+        @server.shutdown
       end
 
       it "should get the redirected robots.txt and the content" do
@@ -38,6 +36,13 @@ describe "RDaneel when there are no redirects" do
             r.http_client.response_header.status.should == 200
             r.http_client.response.should == "Hello World!"
             r.redirects.should be_empty
+
+            served_requests = @server.served_requests
+            served_requests.size.should == 3
+            served_requests[0].should == {:status => status, :url => "/robots.txt"}
+            served_requests[1].should == {:status => 200, :url => "/golems.txt"}
+            served_requests[2].should == {:status => 200, :url => "/hello_world"}
+
             EM.stop
           end
           r.errback do
@@ -56,25 +61,29 @@ describe "RDaneel when there are no redirects" do
 
     describe "when there is a CLIENT error #{status} associated to robots.txt" do
       before(:each) do
-        server_setup(port) do |server|
-          mount(server, :path  => '/hello_world', :status => 200,
-                        :body  => 'Hello World!', :block  => should_be_hit_once )
-          mount(server, :path  => '/robots.txt',  :status => status,
-                        :block => should_be_hit_once )
-        end
+        @server = Burrito.new(port+status)
+        @server.mount(:path  => '/hello_world', :status => 200,
+                      :body  => 'Hello World!')
+        @server.mount(:path  => '/robots.txt',  :status => status)
+        @server.start
       end
 
       after(:each) do
-        server_shutdown
+        @server.shutdown
       end
 
       it "should get the content" do
         EM.run do
-          r = RDaneel.new("http://127.0.0.1:#{port}/hello_world")
+          r = RDaneel.new("http://127.0.0.1:#{port+status}/hello_world")
           r.callback do
             r.http_client.response_header.status.should == 200
             r.http_client.response.should == "Hello World!"
             r.redirects.should be_empty
+
+            served_requests = @server.served_requests
+            served_requests.size.should == 2
+            served_requests[0].should == {:status => status, :url => "/robots.txt"}
+            served_requests[1].should == {:status => 200, :url => "/hello_world"}
             EM.stop
           end
           r.errback do
@@ -93,16 +102,15 @@ describe "RDaneel when there are no redirects" do
 
     describe "when there is a SERVER error #{status} associated to robots.txt" do
       before(:each) do
-        server_setup(port) do |server|
-          mount(server, :path  => '/hello_world', :status => 200,
-                        :body  => 'Hello World!', :block  => should_be_hit_once )
-          mount(server, :path  => '/robots.txt',  :status => status,
-                        :block => should_be_hit_once )
-        end
+        @server = Burrito.new(port)
+        @server.mount(:path  => '/hello_world', :status => 200,
+                      :body  => 'Hello World!')
+        @server.mount(:path  => '/robots.txt',  :status => status)
+        @server.start
       end
 
       after (:each) do
-        server_shutdown
+        @server.shutdown
       end
 
       it "should get the content" do
@@ -112,6 +120,12 @@ describe "RDaneel when there are no redirects" do
             r.http_client.response_header.status.should == 200
             r.http_client.response.should == "Hello World!"
             r.redirects.should be_empty
+
+            served_requests = @server.served_requests
+            served_requests.size.should == 2
+            served_requests[0].should == {:status => status, :url => "/robots.txt"}
+            served_requests[1].should == {:status => 200, :url => "/hello_world"}
+
             EM.stop
           end
           r.errback do
