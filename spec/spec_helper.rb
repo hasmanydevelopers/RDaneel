@@ -3,8 +3,7 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 require 'rubygems'
 require 'rdaneel'
 require 'spec'
-require 'stringio'
-require 'webrick'
+Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each {|f| require f}
 
 def locked_file
   File.join(File.dirname(__FILE__),"server_lock-#{@__port}")

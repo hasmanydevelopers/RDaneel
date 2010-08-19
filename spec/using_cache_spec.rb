@@ -8,20 +8,17 @@ describe "RDaneel when there is a cache" do
 
     before(:each) do
       RDaneel.robots_cache = {}
-      server_setup(port) do |server|
-        mount(server, :path  => '/robots.txt',  :status => 404,
-                      :block => should_be_hit_once )
-        mount(server, :path  => '/redirect_me', :status => 301,
-                      :location  => "http://127.0.0.1:#{port}/hello_world",
-                      :block  => should_be_hit_once )
-        mount(server, :path  => '/hello_world', :status => 200,
-                      :body  => 'Hello World!',
-                      :block  => should_be_hit_once )
-      end
+      @server = Burrito.new(port)
+      @server.mount(:path  => '/robots.txt',  :status => 404)
+      @server.mount(:path  => '/redirect_me', :status => 301,
+                    :location  => "http://127.0.0.1:#{port}/hello_world")
+      @server.mount(:path  => '/hello_world', :status => 200,
+                    :body  => 'Hello World!')
+      @server.start
     end
 
     after(:each) do
-      server_shutdown
+      @server.shutdown
     end
 
     it "should try to get the robots.txt just once" do
@@ -32,6 +29,8 @@ describe "RDaneel when there is a cache" do
           r.http_client.response.should == "Hello World!"
           r.redirects.should == [ "http://127.0.0.1:#{port}/redirect_me"]
           r.uri.to_s.should == "http://127.0.0.1:#{port}/hello_world"
+puts "***********"
+puts @server.requests.inspect
           EM.stop
         end
         r.errback do
@@ -40,8 +39,6 @@ describe "RDaneel when there is a cache" do
         end
         r.get(:redirects => 3)
       end
-puts "***********"
-puts @strio.string
     end
   end
 end
