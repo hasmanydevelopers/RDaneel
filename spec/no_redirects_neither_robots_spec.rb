@@ -16,7 +16,7 @@ describe "RDaneel when there are no redirects" do
 
     describe "when robots.txt has been moved (http code #{status})" do
       before(:each) do
-        @server = Burrito.new(port)
+        @server = Burrito.new(port+status)
         @server.mount(:path  => '/hello_world', :status => 200,
                       :body  => 'Hello World!')
         @server.mount(:path  => '/robots.txt',  :status => status,
@@ -31,7 +31,7 @@ describe "RDaneel when there are no redirects" do
 
       it "should get the redirected robots.txt and the content" do
         EM.run do
-          r = RDaneel.new("http://127.0.0.1:#{port}/hello_world")
+          r = RDaneel.new("http://127.0.0.1:#{port+status}/hello_world")
           r.callback do
             r.http_client.response_header.status.should == 200
             r.http_client.response.should == "Hello World!"

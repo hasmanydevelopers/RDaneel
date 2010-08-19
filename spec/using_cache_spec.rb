@@ -2,7 +2,7 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe "RDaneel when there is a cache" do
 
-  let(:port) {8080}
+  let(:port) {8082}
 
   describe "when there is no robots.txt in the host and url is redirected" do
 
