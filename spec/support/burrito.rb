@@ -1,6 +1,11 @@
 require 'socket'
 
 class Burrito
+  
+  # Why does Burrito exist? Why didn't we used Webrick, or Mongrel, or Thin 
+  # with Rack...? Specs failed at random, in different way in different machines
+  # because of Thread related issues, it became a nightmare. So we fall back
+  # to something we could completely control: A TCP socket :)
 
   STATUS_MESSAGES = {
     200 => 'OK',
