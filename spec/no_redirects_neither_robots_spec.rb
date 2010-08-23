@@ -62,5 +62,86 @@ describe "RDaneel when there are no redirects" do
 
   end
 
+  (400..417).each do |status|
+
+    describe "when there is a CLIENT error #{status} associated to robots.txt" do
+      before(:each) do
+        $server.mount(:path  => '/hello_world', :status => 200,
+                      :body  => 'Hello World!')
+        $server.mount(:path  => '/robots.txt',  :status => status)
+      end
+
+      after(:each) do
+        $server.reset
+      end
+
+      it "should get the content" do
+        EM.run do
+          r = RDaneel.new("http://127.0.0.1:3210/hello_world")
+          r.callback do
+            r.http_client.response_header.status.should == 200
+            r.http_client.response.should == "Hello World!"
+            r.redirects.should be_empty
+
+            requests = $server.requests
+            
+            requests.size.should == 2
+            requests[0].should == { :status => status, :path => "/robots.txt"  }
+            requests[1].should == { :status => 200,    :path => "/hello_world" }
+            EM.stop
+          end
+          r.errback do
+            fail
+            EM.stop
+          end
+          r.get
+        end
+      end
+
+    end
+
+  end
+
+  (500..505).each do |status|
+
+    describe "when there is a SERVER error #{status} associated to robots.txt" do
+      before(:each) do
+        $server.mount(:path  => '/hello_world', :status => 200,
+                      :body  => 'Hello World!')
+        $server.mount(:path  => '/robots.txt',  :status => status)
+      end
+
+      after (:each) do
+        $server.reset
+      end
+
+      it "should get the content" do
+        EM.run do
+          r = RDaneel.new("http://127.0.0.1:3210/hello_world")
+          r.callback do
+            r.http_client.response_header.status.should == 200
+            r.http_client.response.should == "Hello World!"
+            r.redirects.should be_empty
+
+            requests = $server.requests
+            
+            requests.size.should == 2
+            requests[0].should == { :status => status, :path => "/robots.txt"  }
+            requests[1].should == { :status => 200,    :path => "/hello_world" }
+
+            EM.stop
+          end
+          r.errback do
+            fail
+            EM.stop
+          end
+          r.get
+        end
+      end
+
+    end
+    
+  end
+    
 end
 
