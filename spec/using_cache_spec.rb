@@ -2,11 +2,14 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe "RDaneel when there is a cache" do
 
+  after(:each) do
+    $server.reset
+    RDaneel.robots_cache = nil # not sure if we should be reloading RDaneel instead
+  end
+
   describe "when the port has not been specified" do
     it "should fetch the robots.txt just once"
   end
-
-  let(:port) {8082}
 
   describe "when there is no robots.txt in the host and url is redirected" do
 
@@ -19,11 +22,6 @@ describe "RDaneel when there is a cache" do
                     :body  => 'Hello World!')
     end
 
-    after(:each) do
-      $server.reset
-      RDaneel.robots_cache = nil
-    end
-
     it "should fetch the robots.txt just once" do
       EM.run do
         r = RDaneel.new("http://127.0.0.1:3210/redirect_me")
@@ -34,6 +32,7 @@ describe "RDaneel when there is a cache" do
           r.uri.to_s.should == "http://127.0.0.1:3210/hello_world"
 
           requests = $server.requests
+          
           requests.size.should == 3
           requests[0].should == {:status => 404, :path => "/robots.txt"}
           requests[1].should == {:status => 301, :path => "/redirect_me"}
@@ -47,6 +46,8 @@ describe "RDaneel when there is a cache" do
         r.get(:redirects => 3)
       end
     end
+    
   end
+  
 end
 

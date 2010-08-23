@@ -2,11 +2,8 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe "RDaneel when there are no redirects" do
 
-  before(:all) do
-    unless $server
-      $server = Burrito.new
-      $server.start  
-    end
+  after(:each) do
+    $server.reset
   end
 
   describe "when a successfull status different than 200 is issued for robots.txt" do
@@ -27,10 +24,6 @@ describe "RDaneel when there are no redirects" do
         $server.mount(:path  => '/robots.txt',  :status => status,
                       :location => "http://127.0.0.1:3210/golems.txt")
         $server.mount(:path  => '/golems.txt',  :status => 200)
-      end
-
-      after(:each) do
-        $server.reset
       end
 
       it "should get the redirected robots.txt and the content" do
@@ -65,14 +58,11 @@ describe "RDaneel when there are no redirects" do
   (400..417).each do |status|
 
     describe "when there is a CLIENT error #{status} associated to robots.txt" do
+
       before(:each) do
         $server.mount(:path  => '/hello_world', :status => 200,
                       :body  => 'Hello World!')
         $server.mount(:path  => '/robots.txt',  :status => status)
-      end
-
-      after(:each) do
-        $server.reset
       end
 
       it "should get the content" do
@@ -105,14 +95,11 @@ describe "RDaneel when there are no redirects" do
   (500..505).each do |status|
 
     describe "when there is a SERVER error #{status} associated to robots.txt" do
+
       before(:each) do
         $server.mount(:path  => '/hello_world', :status => 200,
                       :body  => 'Hello World!')
         $server.mount(:path  => '/robots.txt',  :status => status)
-      end
-
-      after (:each) do
-        $server.reset
       end
 
       it "should get the content" do

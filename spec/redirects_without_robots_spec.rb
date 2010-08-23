@@ -2,26 +2,20 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe "RDaneel when there are redirects" do
 
-  before(:all) do
-    unless $server
-      $server = Burrito.new
-      $server.start  
-    end
+  after(:each) do
+    $server.reset
   end
 
   describe "when there is no robots.txt in the host (ONLY one host)" do
 
     describe "when no redirection limit has been set" do
+
       before(:each) do
         $server.mount(:path  => '/robots.txt',  :status => 404)
         $server.mount(:path  => '/redirect_me', :status => 301,
                       :location  => "http://127.0.0.1:3210/hello_world")
         $server.mount(:path  => '/hello_world', :status => 200,
                       :body  => 'Hello World!')
-      end
-
-      after(:each) do
-        $server .reset
       end
 
       it "should not follow redirects" do
@@ -60,10 +54,6 @@ describe "RDaneel when there are redirects" do
                         :location  => "http://127.0.0.1:3210/hello_world")
           $server.mount(:path  => '/hello_world', :status => 200,
                         :body  => 'Hello World!')
-        end
-
-        after(:each) do
-          $server.reset
         end
 
         it "should get the content following all the redirects" do
@@ -107,10 +97,6 @@ describe "RDaneel when there are redirects" do
                         :body  => 'Hello World!')
         end
 
-        after(:each) do
-          $server.reset
-        end
-
         it "should get the content following all the redirects" do
           EM.run do
             r = RDaneel.new("http://127.0.0.1:3210/redirect_me")
@@ -148,10 +134,6 @@ describe "RDaneel when there are redirects" do
                         :location  => "http://127.0.0.1:3210/hello_world")
           $server.mount(:path  => '/hello_world', :status => 200,
                         :body  => 'Hello World!')
-        end
-
-        after(:each) do
-          $server.reset
         end
 
         it "should stop following redirects once the  maximum specified is reached" do
