@@ -110,7 +110,7 @@ class RDaneel
         robots.callback {
           robots_file = robots.response
           verbose("Found robots.txt at #{robots_url}:\n#{robots_file}")
-          robots_cache[robots_url.to_s] = robots_file if robots_cache
+          robots_cache[robots_txt_url(robots_url).to_s] = robots_file if robots_cache
           if robots_allowed?(robots_file, useragent, robots_url, current_uri)
             verbose("Robots identified by user agent: #{useragent} are allowed to access: #{current_uri}")
             begin
