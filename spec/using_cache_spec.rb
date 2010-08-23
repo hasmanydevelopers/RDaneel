@@ -21,6 +21,7 @@ describe "RDaneel when there is a cache" do
 
     after(:each) do
       $server.reset
+      RDaneel.robots_cache = nil
     end
 
     it "should fetch the robots.txt just once" do
