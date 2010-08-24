@@ -2,7 +2,7 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe "RDaneel when there are no redirects" do
 
-  after(:each) do
+  before(:each) do
     $server.reset
   end
 
@@ -17,7 +17,7 @@ describe "RDaneel when there are no redirects" do
   (301..302).each do |status|
 
     describe "when robots.txt has been moved (http code #{status})" do
-    
+
       before(:each) do
         $server.mount(:path  => '/hello_world', :status => 200,
                       :body  => 'Hello World!')
@@ -43,7 +43,7 @@ describe "RDaneel when there are no redirects" do
 
             EM.stop
           end
-          r.errback do 
+          r.errback do
             fail
             EM.stop
           end
@@ -74,7 +74,7 @@ describe "RDaneel when there are no redirects" do
             r.redirects.should be_empty
 
             requests = $server.requests
-            
+
             requests.size.should == 2
             requests[0].should == { :status => status, :path => "/robots.txt"  }
             requests[1].should == { :status => 200,    :path => "/hello_world" }
@@ -111,7 +111,7 @@ describe "RDaneel when there are no redirects" do
             r.redirects.should be_empty
 
             requests = $server.requests
-            
+
             requests.size.should == 2
             requests[0].should == { :status => status, :path => "/robots.txt"  }
             requests[1].should == { :status => 200,    :path => "/hello_world" }
@@ -127,8 +127,8 @@ describe "RDaneel when there are no redirects" do
       end
 
     end
-    
+
   end
-    
+
 end
 

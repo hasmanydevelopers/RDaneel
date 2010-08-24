@@ -2,7 +2,7 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe "RDaneel when there are redirects" do
 
-  after(:each) do
+  before(:each) do
     $server.reset
   end
 
