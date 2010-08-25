@@ -24,19 +24,6 @@ Given /^a "([^"]*)" url that redirects relatively to "([^"]*)" url$/ do |url, re
                 :location  => "#{redirected_to}")
 end
 
-When /^I get the "([^\"]*)" url$/ do |url|
-  EM.run do
-    @r = RDaneel.new("#{HOST}/#{url}")
-    @r.callback do
-      EM.stop
-    end
-    @r.errback do
-      EM.stop
-    end
-    @r.get
-  end
-end
-
 When /^I get the "([^"]*)" url following a maximum of (\d+) redirects$/ do |url, max_redirects|
   EM.run do
     @r = RDaneel.new("#{HOST}#{url}")
@@ -49,7 +36,6 @@ When /^I get the "([^"]*)" url following a maximum of (\d+) redirects$/ do |url,
     @r.get(:redirects => max_redirects)
   end
 end
-
 
 Then /^I should get the content for HelloWorld url$/ do
   @r.http_client.response.should == "Hello World"
@@ -76,7 +62,7 @@ Then /^The redirects sequence should be:$/ do |expected_redirects|
   @r.redirects.should == expected_redirects.raw.flatten
 end
 
-Then /^I should get a robots\.txt denied error code$/ do
-  @r.error.should == "Robots are not allowed"
+Then /^I should get a "([^"]*)" error$/ do |error_message|
+  @r.error.should == error_message
 end
 

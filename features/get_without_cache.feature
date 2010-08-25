@@ -6,7 +6,7 @@ Feature: get a url without using cache
   Scenario: a robots.txt exists allowing RDaneel's user-agent
     Given a robots.txt that allows RDaneel
     And   a HelloWorld url
-    When  I get the "hello_world" url
+    When  I get the "/hello_world" url following a maximum of 1 redirects
     Then  I should get the content for HelloWorld url
     And   the http response code should be 200
     And   I should get 0 redirects
@@ -18,14 +18,14 @@ Feature: get a url without using cache
   Scenario: a robots.txt exists denying RDaneel's user-agent
     Given a robots.txt that denies RDaneel
     And   a HelloWorld url
-    When  I get the "hello_world" url
-    Then  I should get a robots.txt denied error code
+    When  I get the "/hello_world" url following a maximum of 1 redirects
+    Then  I should get a "Robots are not allowed" error
     And   I should get 0 redirects
     And   The requests sequence should be:
       | status | path         |
       | 200    | /robots.txt  |
 
-  Scenario: the desire url to fecth is redirected
+  Scenario: the url to fetch is redirected
     Given a robots.txt that allows RDaneel
     And   a HelloWorld url
     And   a "/redirect_me" url that redirects absolutely to "/redirect_me_again" url
