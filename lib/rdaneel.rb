@@ -45,18 +45,18 @@ class RDaneel
         if @redirects.size >= max_redirects
           @http_client = h
           @error = "Exceeded maximum number of redirects: #{max_redirects}"
-          verbose(@error, h, :status, :response)          
+          verbose(@error, h, :status, :response)
           fail(self)
           return
         end
         begin
           @redirects << current_uri.to_s
           current_uri = redirect_url(h, current_uri)
-          verbose("Redirected to: #{current_uri.to_s} from: #{@redirects[-1]}", h, :status, :response)                    
+          verbose("Redirected to: #{current_uri.to_s} from: #{@redirects[-1]}", h, :status, :response)
           if @redirects.include?(current_uri.to_s)
             @http_client = h
             @error = "Infinite redirect detected for: #{current_uri.to_s}"
-            verbose(@error, h, :status, :response)          
+            verbose(@error, h, :status, :response)
             fail(self)
             return
           end
@@ -106,9 +106,15 @@ class RDaneel
       else
         robots_url = robots_txt_url(current_uri)
         robots = EM::HttpRequest.new(robots_url).get(:redirects => 2) # get the robots.txt following redirects
-        verbose("Started fetching robots.txt from: #{robots_url} for: #{current_uri}",robots,:request) 
+        verbose("Started fetching robots.txt from: #{robots_url} for: #{current_uri}",robots,:request)
         robots.callback {
-          robots_file = robots.response
+          if success?(robots)
+            robots_file = robots.response
+            verbose("Found robots.txt at #{robots_url}:\n#{robots_file}", robots, :status, :response)
+          else
+            robots_file = ''
+            verbose("Didn't find robots.txt at #{robots_url}", robots, :status, :response)
+          end
           verbose("Found robots.txt at #{robots_url}:\n#{robots_file}")
           robots_cache[robots_txt_url(robots_url).to_s] = robots_file if robots_cache
           if robots_allowed?(robots_file, useragent, robots_url, current_uri)
@@ -203,7 +209,7 @@ class RDaneel
           if client.response_header.status == 0
             hashed_puts('< Status:', '0 (timeout)')
           else
-            hashed_puts('< Status:', client.response_header.status)        
+            hashed_puts('< Status:', client.response_header.status)
           end
         when :request  # this is a options hash
           headers = client.options[:head]
@@ -213,11 +219,11 @@ class RDaneel
       end
     end
   end
-  
+
   private
-  
+
   def hashed_puts( prefix, message )
-    $stdout.puts("[#{@hash}] [#{Time.now.strftime('%Y-%m-%d %H:%m:%S')}] #{prefix} #{message}")  
+    $stdout.puts("[#{@hash}] [#{Time.now.strftime('%Y-%m-%d %H:%m:%S')}] #{prefix} #{message}")
   end
 
 end
