@@ -5,5 +5,8 @@ require 'rdaneel'
 require 'spec'
 Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each {|f| require f}
 
-$server = Burrito.new
-$server.start  
+unless $server
+  $server = Burrito.new
+  $server.start
+end
+
