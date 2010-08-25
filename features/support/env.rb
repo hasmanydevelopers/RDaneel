@@ -9,6 +9,8 @@ unless $server
   $server.start
 end
 
+HOST = "http://127.0.0.1:3210"
+
 Before do
   $server.reset
 end

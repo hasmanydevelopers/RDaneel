@@ -14,9 +14,19 @@ Given /^a HelloWorld url$/ do
                 :body  => "Hello World")
 end
 
+Given /^a "([^"]*)" url that redirects absolutely to "([^"]*)" url$/ do |url, redirected_to|
+  $server.mount(:path  => url, :status => 301,
+                :location  => "#{HOST}#{redirected_to}")
+end
+
+Given /^a "([^"]*)" url that redirects relatively to "([^"]*)" url$/ do |url, redirected_to|
+  $server.mount(:path  => url, :status => 302,
+                :location  => "#{redirected_to}")
+end
+
 When /^I get the "([^\"]*)" url$/ do |url|
   EM.run do
-    @r = RDaneel.new("http://127.0.0.1:3210/#{url}")
+    @r = RDaneel.new("#{HOST}/#{url}")
     @r.callback do
       EM.stop
     end
@@ -26,6 +36,20 @@ When /^I get the "([^\"]*)" url$/ do |url|
     @r.get
   end
 end
+
+When /^I get the "([^"]*)" url following a maximum of (\d+) redirects$/ do |url, max_redirects|
+  EM.run do
+    @r = RDaneel.new("#{HOST}#{url}")
+    @r.callback do
+      EM.stop
+    end
+    @r.errback do
+      EM.stop
+    end
+    @r.get(:redirects => max_redirects)
+  end
+end
+
 
 Then /^I should get the content for HelloWorld url$/ do
   @r.http_client.response.should == "Hello World"
@@ -39,10 +63,17 @@ Then /^I should get (\d+) redirects$/ do |redirects_count|
   @r.redirects.size.should == redirects_count.to_i
 end
 
-Then /^The requests sequence should be:$/ do |expected_requests|
-  current_requests = []
-  $server.requests.each {|req| current_requests << [req[:status].to_s, req[:path]]}
-  expected_requests.diff!(current_requests)
+Then /^The requests sequence should be:$/ do |expected_table|
+  expected_requests = []
+  expected_table.hashes.each do |hash|
+    expected_requests << {:status => hash[:status].to_i,
+                          :path => hash[:path]}
+  end
+  $server.requests.should == expected_requests
+end
+
+Then /^The redirects sequence should be:$/ do |expected_redirects|
+  @r.redirects.should == expected_redirects.raw.flatten
 end
 
 Then /^I should get a robots\.txt denied error code$/ do
