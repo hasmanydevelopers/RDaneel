@@ -4,8 +4,6 @@ require 'rubygems'
 require 'rdaneel'
 require 'burrito'
 
-
-
 unless $server
   $server = Burrito.new
   $server.start
