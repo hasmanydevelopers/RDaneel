@@ -6,7 +6,7 @@ class Burrito
     200 => 'OK',
     301 => 'Moved Permanently',
     302 => 'Found',
-    302 => 'Not Found'
+    404 => 'Not Found'
   }
 
   attr_reader :requests
@@ -41,6 +41,8 @@ class Burrito
           location = @routes[path][:location]
         else
           status = 404
+          body = nil
+          location = nil
         end
         @requests.push( { :status => status, :path => path } )
         response =  "HTTP/1.1 #{status} #{STATUS_MESSAGES[status]}\r\n"
