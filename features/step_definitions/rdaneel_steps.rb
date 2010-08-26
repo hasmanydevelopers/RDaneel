@@ -19,6 +19,10 @@ Given /^a "([^"]*)" url that redirects (\d+) to "([^"]*)" url$/ do |url, status,
                 :location  => redirected_to)
 end
 
+Given /^a cache for RDaneel$/ do
+  RDaneel.robots_cache = {}
+end
+
 When /^I get the "([^"]*)" url following a maximum of (\d+) redirects$/ do |url, max_redirects|
   EM.run do
     @r = RDaneel.new("#{HOST}#{url}")
@@ -59,5 +63,9 @@ end
 
 Then /^I should get a "([^"]*)" error$/ do |error_message|
   @r.error.should == error_message
+end
+
+Then /^The cache for "([^"]*)" should be$/ do |robots_url, robots_file|
+  RDaneel.robots_cache[robots_url].should == robots_file
 end
 

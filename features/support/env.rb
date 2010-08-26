@@ -13,6 +13,7 @@ HOST = "http://127.0.0.1:3210"
 
 Before do
   $server.reset
+  RDaneel.robots_cache = nil
 end
 
 at_exit do
