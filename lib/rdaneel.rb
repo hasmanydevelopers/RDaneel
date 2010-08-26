@@ -49,23 +49,30 @@ class RDaneel
           fail(self)
           return
         end
-        begin
-          @redirects << current_uri.to_s
-          current_uri = redirect_url(h, current_uri)
-          verbose("Redirected to: #{current_uri.to_s} from: #{@redirects[-1]}", h, :status, :response)
-          if @redirects.include?(current_uri.to_s)
+        @redirects << current_uri.to_s
+        current_uri = redirect_url(h, current_uri)
+        if current_uri.host.nil?
+          @http_client = h
+          @error = "Location header format error" # the lack of information here is to be consistent with em-http-request error message
+          verbose("#{@error} for #{current_uri.to_s}", h, :status, :response)
+          fail(self)
+        else
+          begin
+            verbose("Redirected to: #{current_uri.to_s} from: #{@redirects[-1]}", h, :status, :response)
+            if @redirects.include?(current_uri.to_s)
+              @http_client = h
+              @error = "Infinite redirect detected for: #{current_uri.to_s}"
+              verbose(@error, h, :status, :response)
+              fail(self)
+              return
+            end
+            _get.call
+          rescue StandardError => se
             @http_client = h
-            @error = "Infinite redirect detected for: #{current_uri.to_s}"
+            @error = "Error trying to follow a redirect #{current_uri.to_s}: #{h.response_header.location}"
             verbose(@error, h, :status, :response)
             fail(self)
-            return
           end
-          _get.call
-        rescue StandardError => se
-          @http_client = h
-          @error = "Malformed redirect url: #{se.message}\n#{se.backtrace.join("\n")}"
-          verbose(@error, h, :status, :response)
-          fail(self)
         end
       else
         # other error
@@ -115,7 +122,6 @@ class RDaneel
             robots_file = ''
             verbose("Didn't find robots.txt at #{robots_url}", robots, :status, :response)
           end
-          verbose("Found robots.txt at #{robots_url}:\n#{robots_file}")
           robots_cache[robots_txt_url(robots_url).to_s] = robots_file if robots_cache
           if robots_allowed?(robots_file, useragent, robots_url, current_uri)
             verbose("Robots identified by user agent: #{useragent} are allowed to access: #{current_uri}")
@@ -194,10 +200,10 @@ class RDaneel
   end
 
   def redirect_url(http_client, u)
-    location = Addressable::URI.parse(http_client.response_header.location)
-    location = u.join(location) if location.relative?
-    location.path = "/" if location.path.nil? || location.path == ""
-    location
+    # em-http-request handles the case when redirect is relative
+    # at this point http_client.response_header.location should always have an absolute and valid url
+    # but this invalid url is parsed successfully http:/malformed:url so we ask for host
+    Addressable::URI.parse(http_client.response_header.location)
   end
 
   def verbose(message, client = nil, *args)
