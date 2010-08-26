@@ -28,3 +28,17 @@ Feature: get a url using cache
       Disallow: /cgi-bin/
       """
 
+  Scenario: a cached robots.txt exists denying RDaneel's user-agent
+    Given a cache for RDaneel
+    And   The cache for "http://127.0.0.1:3210/robots.txt" is:
+      """
+      User-agent: *
+      Disallow: /
+      """
+    And   a robots.txt that denies RDaneel
+    And   a HelloWorld url
+    When  I get the "/hello_world" url following a maximum of 1 redirects
+    Then  I should get a "Robots are not allowed" error
+    And   I should get 0 redirects
+    And   The requests should be empty
+

@@ -23,6 +23,10 @@ Given /^a cache for RDaneel$/ do
   RDaneel.robots_cache = {}
 end
 
+Given /^The cache for "([^"]*)" is:$/ do |robots_url, robots_file|
+  RDaneel.robots_cache[robots_url] = robots_file
+end
+
 When /^I get the "([^"]*)" url following a maximum of (\d+) redirects$/ do |url, max_redirects|
   EM.run do
     @r = RDaneel.new("#{HOST}#{url}")
@@ -55,6 +59,10 @@ Then /^The requests sequence should be:$/ do |expected_table|
                           :path => hash[:path]}
   end
   $server.requests.should == expected_requests
+end
+
+Then /^The requests should be empty$/ do
+  $server.requests.should be_empty
 end
 
 Then /^The redirects sequence should be:$/ do |expected_redirects|
