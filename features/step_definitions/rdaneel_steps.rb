@@ -14,14 +14,9 @@ Given /^a HelloWorld url$/ do
                 :body  => "Hello World")
 end
 
-Given /^a "([^"]*)" url that redirects absolutely to "([^"]*)" url$/ do |url, redirected_to|
-  $server.mount(:path  => url, :status => 301,
-                :location  => "#{HOST}#{redirected_to}")
-end
-
-Given /^a "([^"]*)" url that redirects relatively to "([^"]*)" url$/ do |url, redirected_to|
-  $server.mount(:path  => url, :status => 302,
-                :location  => "#{redirected_to}")
+Given /^a "([^"]*)" url that redirects (\d+) to "([^"]*)" url$/ do |url, status, redirected_to|
+  $server.mount(:path  => url, :status => status.to_i,
+                :location  => redirected_to)
 end
 
 When /^I get the "([^"]*)" url following a maximum of (\d+) redirects$/ do |url, max_redirects|
