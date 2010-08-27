@@ -23,5 +23,25 @@ describe "RDaneel" do
     end
 
   end
+
+
+  describe "robots_allowed?" do
+    before(:each) do
+      @rdaneel = RDaneel.new("http://127.0.0.1/anyurl")
+    end
+
+    describe "when an error happens parsing the robots rules" do
+      before(:each) do
+        @robot_rules = RobotRules.new("RDaneel")
+        @robot_rules.stub!(:parse).and_raise(StandardError)
+        RobotRules.stub!(:new).and_return(@robot_rules)
+      end
+
+      it "should return true" do #no matter the params
+        @rdaneel.send(:robots_allowed?, nil, nil, nil, nil).should be_true
+      end
+    end
+  end
+
 end
 
