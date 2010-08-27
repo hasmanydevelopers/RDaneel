@@ -128,14 +128,12 @@ Feature: get a url without using cache
       | 200    | /robots.txt        |
       | 302    | /redirect_me       |
 
-  Scenario: the url to fetch redirects to a malformed url (format not-handled by em-http-request)
+  Scenario: the url to fetch redirects to a malformed url (format handled by em-http-request 0.2.11+)
     Given a robots.txt that allows RDaneel
     And   a "/redirect_me" url that redirects 302 to "http:/malformed:url" url
     When  I get the "/redirect_me" url following a maximum of 2 redirects
     Then  I should get a "Location header format error" error
-    And   I should get 1 redirects
-    And   The redirects sequence should be:
-      | http://127.0.0.1:3210/redirect_me |
+    And   I should get 0 redirects
     And   The requests sequence should be:
       | status | path               |
       | 200    | /robots.txt        |

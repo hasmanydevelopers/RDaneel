@@ -10,7 +10,7 @@ begin
     gem.email = ["edgargonzalez@gmail.com", "anibalrojas@gmail.com"]
     gem.homepage = "http://github.com/hasmanydevelopers/RDaneel"
     gem.authors = ["Edgar Gonzalez", "Anibal Rojas"]
-    gem.add_dependency("em-http-request", ">= 0.2.10")
+    gem.add_dependency("em-http-request", ">= 0.2.11")
     gem.add_dependency('robot_rules', '>= 0.9.3')
     gem.add_development_dependency "cucumber", ">= 0.8.5"
     gem.add_development_dependency "relevance-rcov", ">= 0.9.2.1"
