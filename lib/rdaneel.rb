@@ -51,28 +51,21 @@ class RDaneel
         end
         @redirects << current_uri.to_s
         current_uri = redirect_url(h, current_uri)
-        if current_uri.host.nil?
-          @http_client = h
-          @error = "Location header format error" # the lack of information here is to be consistent with em-http-request error message
-          verbose("#{@error} for #{current_uri.to_s}", h, :status, :response)
-          fail(self)
-        else
-          begin
-            verbose("Redirected to: #{current_uri.to_s} from: #{@redirects[-1]}", h, :status, :response)
-            if @redirects.include?(current_uri.to_s)
-              @http_client = h
-              @error = "Infinite redirect detected for: #{current_uri.to_s}"
-              verbose(@error, h, :status, :response)
-              fail(self)
-              return
-            end
-            _get.call
-          rescue StandardError => se
+        begin
+          verbose("Redirected to: #{current_uri.to_s} from: #{@redirects[-1]}", h, :status, :response)
+          if @redirects.include?(current_uri.to_s)
             @http_client = h
-            @error = "Error trying to follow a redirect #{current_uri.to_s}: #{h.response_header.location}"
+            @error = "Infinite redirect detected for: #{current_uri.to_s}"
             verbose(@error, h, :status, :response)
             fail(self)
+            return
           end
+          _get.call
+        rescue StandardError => se
+          @http_client = h
+          @error = "Error trying to follow a redirect #{current_uri.to_s}: #{h.response_header.location}"
+          verbose(@error, h, :status, :response)
+          fail(self)
         end
       else
         # other error

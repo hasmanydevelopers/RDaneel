@@ -128,7 +128,7 @@ Feature: get a url without using cache
       | 200    | /robots.txt        |
       | 302    | /redirect_me       |
 
-  Scenario: the url to fetch redirects to a malformed url (format handled by em-http-request 0.2.11+)
+  Scenario: the url to fetch redirects to a malformed url (format not handled by em-http-request 0.2.10)
     Given a robots.txt that allows RDaneel
     And   a "/redirect_me" url that redirects 302 to "http:/malformed:url" url
     When  I get the "/redirect_me" url following a maximum of 2 redirects
