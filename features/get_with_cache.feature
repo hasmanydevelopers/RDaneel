@@ -42,3 +42,26 @@ Feature: get a url using cache
     And   I should get 0 redirects
     And   The requests should be empty
 
+
+  Scenario: the url to fetch is redirected to unreacheable server but a robots cache exists for this server allowing RDaneel
+    Given a cache for RDaneel
+    And   The cache for "http://127.0.0.1:3210/robots.txt" is:
+      """
+      User-agent: *
+      Disallow: /cgi-bin/
+      """
+    And   The cache for "http://127.0.0.1:3211/robots.txt" is:
+      """
+      User-agent: *
+      Disallow: /cgi-bin/
+      """
+    And   a "/redirect_me" url that redirects 301 to "http://127.0.0.1:3211/unreacheable" url
+    When  I get the "/redirect_me" url following a maximum of 3 redirects
+    Then  I should get a "An error occurred when fetching http://127.0.0.1:3211/unreacheable" error
+    And   I should get 1 redirects
+    And   The redirects sequence should be:
+      | http://127.0.0.1:3210/redirect_me       |
+    And   The requests sequence should be:
+      | status | path               |
+      | 301    | /redirect_me       |
+

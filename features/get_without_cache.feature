@@ -141,3 +141,17 @@ Feature: get a url without using cache
       | 200    | /robots.txt        |
       | 302    | /redirect_me       |
 
+  Scenario: the url to fetch is redirected to unreacheable host:port
+    Given a robots.txt that allows RDaneel
+    And   a HelloWorld url
+    And   a "/redirect_me" url that redirects 301 to "http://127.0.0.1:3211/unreacheable" url
+    When  I get the "/redirect_me" url following a maximum of 3 redirects
+    Then  I should get a "An error occurred when fetching http://127.0.0.1:3211/unreacheable" error
+    And   I should get 1 redirects
+    And   The redirects sequence should be:
+      | http://127.0.0.1:3210/redirect_me       |
+    And   The requests sequence should be:
+      | status | path               |
+      | 200    | /robots.txt        |
+      | 301    | /redirect_me       |
+

@@ -94,7 +94,7 @@ class RDaneel
             h.callback(&_handle_uri_callback)
             h.errback {
               @http_client = h
-              @error = h.error
+              @error = error_message(h)
               verbose("#{@error} for: #{current_uri}",h,:status,:response)
               fail(self)
             }
@@ -131,7 +131,7 @@ class RDaneel
               h.callback(&_handle_uri_callback)
               h.errback {
                 @http_client = h
-                @error = h.error
+                @error = error_message(h)
                 verbose("#{@error} for: #{current_uri}", h, :status, :response)
                 fail(self)
               }
@@ -156,7 +156,7 @@ class RDaneel
           h.callback(&_handle_uri_callback)
           h.errback {
             @http_client = h
-            @error = h.error
+            @error = error_message(h)
             verbose("#{@error} for: #{current_uri}", h, :status, :response)
             fail(self)
           }
@@ -189,6 +189,14 @@ class RDaneel
       "#{u.host}:#{u.port}"
     end
     Addressable::URI.parse("http://#{location}/robots.txt")
+  end
+
+  def error_message(http_client)
+    @error = if http_client.error.nil? || http_client.error.empty?
+      "An error occurred when fetching #{http_client.uri.to_s}"
+    else
+      http_client.error
+    end
   end
 
   def success?(http_client)
