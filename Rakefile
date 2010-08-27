@@ -22,23 +22,18 @@ rescue LoadError
 end
 
 require 'cucumber/rake/task'
-
 Cucumber::Rake::Task.new(:features) do |t|
   t.cucumber_opts = "--format pretty" # Any valid command line option can go here.
   t.rcov = true
 end
 
+require 'spec/rake/spectask'
+Spec::Rake::SpecTask.new(:spec) do |spec|
+  spec.libs << 'lib' << 'spec'
+  spec.spec_files = FileList['spec/**/*_spec.rb']
+end
+
 task :features => :check_dependencies
 
 task :default => :features
-
-require 'rake/rdoctask'
-Rake::RDocTask.new do |rdoc|
-  version = File.exist?('VERSION') ? File.read('VERSION') : ""
-
-  rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "rdaneel #{version}"
-  rdoc.rdoc_files.include('README*')
-  rdoc.rdoc_files.include('lib/**/*.rb')
-end
 
