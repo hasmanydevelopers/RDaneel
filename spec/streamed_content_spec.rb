@@ -9,7 +9,7 @@ describe "RDaneel when the content is chunked (digg.com)" do
 
     it "should get the content" do
       EM.run do
-        r = RDaneel.new("http://digg.com")
+        r = RDaneel.new("http://digg.com/news")
         r.callback do
           r.http_client.response_header.status.should == 200
           r.http_client.response.should_not be_empty
