@@ -139,7 +139,7 @@ Feature: get a url without using cache
       | 200    | /robots.txt        |
       | 302    | /redirect_me       |
 
-  Scenario: the url to fetch is redirected to unreacheable host:port
+  Scenario: the url to fetch is redirected to unreacheable port
     Given a robots.txt that allows RDaneel
     And   a HelloWorld url
     And   a "/redirect_me" url that redirects 301 to "http://127.0.0.1:3211/unreacheable" url
@@ -152,4 +152,40 @@ Feature: get a url without using cache
       | status | path               |
       | 200    | /robots.txt        |
       | 301    | /redirect_me       |
+
+  Scenario: the url to fetch is redirected to unreacheable host
+    Given a robots.txt that allows RDaneel
+    And   a HelloWorld url
+    And   a "/redirect_me" url that redirects 301 to "http://wrongserver/unreacheable" url
+    When  I get the "/redirect_me" url following a maximum of 3 redirects
+    Then  I should get a "unable to resolve server address" error
+    And   I should get 1 redirects
+    And   The redirects sequence should be:
+      | http://127.0.0.1:3210/redirect_me       |
+    And   The requests sequence should be:
+      | status | path               |
+      | 200    | /robots.txt        |
+      | 301    | /redirect_me       |
+
+  Scenario: the robots.txt for the url to fetch is redirected to unreacheable host:port
+    Given a "/robots.txt" url that redirects 301 to "http://127.0.0.1:3211/unreacheable" url
+    And   a HelloWorld url
+    When  I get the "/hello_world" url following a maximum of 3 redirects
+    Then  I should get the content for HelloWorld url
+    And   I should get 0 redirects
+    And   The requests sequence should be:
+      | status | path               |
+      | 301    | /robots.txt        |
+      | 200    | /hello_world       |
+
+  Scenario: the robots.txt for the url to fetch is redirected to unreacheable host
+    Given a "/robots.txt" url that redirects 301 to "http://wrongserver/unreacheable" url
+    And   a HelloWorld url
+    When  I get the "/hello_world" url following a maximum of 3 redirects
+    Then  I should get the content for HelloWorld url
+    And   I should get 0 redirects
+    And   The requests sequence should be:
+      | status | path               |
+      | 301    | /robots.txt        |
+      | 200    | /hello_world       |
 
