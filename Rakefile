@@ -10,7 +10,7 @@ begin
     gem.email = ["edgargonzalez@gmail.com", "anibalrojas@gmail.com"]
     gem.homepage = "http://github.com/hasmanydevelopers/RDaneel"
     gem.authors = ["Edgar Gonzalez", "Anibal Rojas"]
-    gem.add_dependency("em-http-request", ">= 0.2.11")
+    gem.add_dependency("em-http-request", ">= 0.2.12")
     gem.add_dependency('robot_rules', '>= 0.9.3')
     gem.add_development_dependency "rspec", ">= 1.2.9"
     gem.add_development_dependency "cucumber", ">= 0.8.5"
@@ -23,25 +23,43 @@ rescue LoadError
 end
 
 require 'cucumber/rake/task'
-Cucumber::Rake::Task.new(:features) do |t|
+
+desc "Run Cucumber features with RCov"
+Cucumber::Rake::Task.new(:features_rcov) do |t|
   t.cucumber_opts = "--format pretty" # Any valid command line option can go here.
   t.rcov = true
   t.rcov_opts = %w{--exclude gems\/,spec\/,features\/ --aggregate coverage.data}
 end
 
+Cucumber::Rake::Task.new(:features) do |t|
+  t.cucumber_opts = "--format pretty" # Any valid command line option can go here.
+end
+
+
 require 'spec/rake/spectask'
-Spec::Rake::SpecTask.new(:spec) do |spec|
+Spec::Rake::SpecTask.new(:spec_rcov) do |spec|
   spec.libs << 'lib' << 'spec'
-  spec.spec_files = FileList['spec/**/*_spec.rb']
+  spec.spec_files = FileList['spec/*_spec.rb']
   spec.rcov = true
   spec.rcov_opts = %w{--exclude gems\/,spec\/,features\/ --aggregate coverage.data}
 end
 
-desc "Run both specs and features and generate aggregated coverage"
+Spec::Rake::SpecTask.new(:spec) do |spec|
+  spec.libs << 'lib' << 'spec'
+  spec.spec_files = FileList['spec/*_spec.rb']
+end
+
+desc "Run optional specs (internet access)"
+Spec::Rake::SpecTask.new(:spec_optional) do |spec|
+  spec.libs << 'lib' << 'spec'
+  spec.spec_files = FileList['spec/optional/*_spec.rb']
+end
+
+desc "Run both specs and features with RCov"
 task :all_tests do |t|
   rm "coverage.data" if File.exist?("coverage.data")
-  Rake::Task['spec'].invoke
-  Rake::Task["features"].invoke
+  Rake::Task['spec_rcov'].invoke
+  Rake::Task['features_rcov'].invoke
 end
 
 task :features => :check_dependencies
