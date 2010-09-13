@@ -210,19 +210,23 @@ class RDaneel
   def verbose(message, client = nil, *args)
     return unless @verbose
     message.each { |l| hashed_puts('*', l) }
-    args.each do |a|
-      case a
-        when :status
-          if client.response_header.status == 0
-            hashed_puts('< Status:', '0 (timeout)')
-          else
-            hashed_puts('< Status:', client.response_header.status)
-          end
-        when :request  # this is a options hash
-          headers = client.options[:head]
-          headers.each { |k,v| hashed_puts('>', "#{k}: #{v}") } if headers
-        when :response # this is an array
-          client.response_header.each { |r| hashed_puts('<', "#{r[0]}: #{r[1]}") }
+    if client
+      args.each do |a|
+        case a
+          when :status
+            if client.response_header.status == 0
+              hashed_puts('< Status:', '0 (timeout)')
+            else
+              hashed_puts('< Status:', client.response_header.status)
+            end
+          when :request  # this is a options hash
+            if client.options
+              headers = client.options[:head]
+              headers.each { |k,v| hashed_puts('>', "#{k}: #{v}") } if headers
+            end
+          when :response # this is an array
+            client.response_header.each { |r| hashed_puts('<', "#{r[0]}: #{r[1]}") }
+        end
       end
     end
   end
